@@ -1,0 +1,9 @@
+#!/bin/bash
+
+LIB_DIR=./lib
+LOG4J_JARS=${LIB_DIR}/log4j
+JUNIT_JARS=${LIB_DIR}/junit
+
+java -classpath ${LIB_DIR}:${LOG4J_JARS}:${JUNIT_JARS} Cella
+
+
