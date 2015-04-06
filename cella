@@ -1,9 +1,9 @@
 #!/bin/bash
 
 LIB_DIR=./lib
-LOG4J_JARS=${LIB_DIR}/log4j
-JUNIT_JARS=${LIB_DIR}/junit
+LOG4J_JARS=${LIB_DIR}/log4j/log4j-1.2.17.jar
+JUNIT_JARS=${LIB_DIR}/junit/hamcrest-core-1.3.jar:${LIB_DIR}/junit/junit-4.12.jar
 
-java -classpath ${LIB_DIR}:${LOG4J_JARS}:${JUNIT_JARS} Cella
+java -Dlog4j.configuration=conf/default-stdout.xml -classpath ${LIB_DIR}:${LOG4J_JARS}:${JUNIT_JARS} Cella
 
 
