@@ -11,7 +11,7 @@ HAM_JAR=$(LIB_DIR)/junit/hamcrest-core-1.3.jar
 COMMONS_CLI_JAR=$(LIB_DIR)/commons/commons-cli-1.2.jar
 JAVA_REFLECTION_SOURCES = Diary.java XLevel.java Loggable.java
 JAVA_FQ_REFLECTION_SOURCES = $(JAVA_REFLECTION_SOURCES:%.java=$(SRC_DIR)/%.java)
-JAVA_SOURCES = Cella.java
+JAVA_SOURCES = Cella.java CA.java
 JAVA_FQ_SOURCES = $(JAVA_SOURCES:%.java=$(SRC_DIR)/%.java)
 JAVA_NOLIB_CLASSES = $(patsubst %.java,$(PACKAGE)/%.class,$(JAVA_SOURCES) $(JAVA_REFLECTION_SOURCES))
 JAVA_CLASSES = $(patsubst %.java,$(LIB_DIR)/$(PACKAGE)/%.class,$(JAVA_SOURCES))

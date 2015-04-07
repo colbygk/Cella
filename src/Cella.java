@@ -7,11 +7,14 @@ package cs523.project2;
 import java.io.PrintStream;
 
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.ParseException;
 
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
-import java.util.Map;
 import java.net.URISyntaxException;
 import java.io.IOException;
 
@@ -21,10 +24,17 @@ public class Cella extends Loggable
   static PrintStream err = System.err;
   static PrintStream out = System.out;
 
+  static final String MITCHELLOPTION = "m";
+  static final String RADIUSOPTION = "r";
+
+  private CA mySharona = null;
+
   protected Cella() 
   {
     mDiary = getDiary();
     mDiary.trace3( "Instantiating Cella()" );
+
+    mySharona = new CA();
 
     try
     {
@@ -59,15 +69,47 @@ public class Cella extends Loggable
   {
     Options o = new Options();
 
-    o.addOption( "r", true, "Specify rule number (Mitchell Format)" );
+    o.addOption( MITCHELLOPTION, true, "Specify rule number (Mitchell Format)" );
+    o.addOption( RADIUSOPTION, true, "Specify radius" );
 
     return o;
   }
 
   private void handleCommandLine( String [] args )
   {
-    Options o = setupCommandLineOptions();
+    try
+    {
+      Options o = setupCommandLineOptions();
+      CommandLineParser clp = new GnuParser();
+      CommandLine cl = clp.parse( o, args );
 
+      if ( cl.hasOption( MITCHELLOPTION ) )
+      {
+        mySharona.setRule( Long.valueOf( cl.getOptionValue( MITCHELLOPTION ) ) );
+      }
+      else
+      {
+        // Majority Rule is default
+        mySharona.setRule( 23 );
+      }
+
+      if ( cl.hasOption( RADIUSOPTION ) )
+      {
+        mySharona.setRadius( Integer.valueOf( cl.getOptionValue( RADIUSOPTION ) ) );
+      }
+      else
+      {
+        mySharona.setRadius( 2 );
+      }
+
+    }
+    catch ( ParseException pe )
+    {
+      err.println( "Error parsing: " + pe.getMessage() );
+    }
+
+
+    mDiary.info( "CA:" + mySharona.ruleBitsToString() );
   }
 
   public static void main ( String [] args )
@@ -79,7 +121,7 @@ public class Cella extends Loggable
     }
     catch ( Exception ex )
     {
-      err.println("Unexpected Exception: " + ex );
+      err.println( "Unexpected Exception: " + ex.getMessage() );
     }
   }
 }
