@@ -51,11 +51,11 @@ public class Cella
     }
     catch ( URISyntaxException urise )
     {
-      mDiary.warn( urise );
+      mDiary.warn( "Unable to get version information: " + urise );
     }
     catch ( IOException ioe )
     {
-      mDiary.warn( ioe );
+      mDiary.warn( "Unable to get version information: " + ioe );
     }
 
   }
