@@ -51,11 +51,11 @@ public class Cella
     }
     catch ( URISyntaxException urise )
     {
-      mDiary.error( urise );
+      mDiary.warn( urise );
     }
     catch ( IOException ioe )
     {
-      mDiary.error( ioe );
+      mDiary.warn( ioe );
     }
 
   }
