@@ -22,9 +22,12 @@ all: build_jar
 java_sources: $(JAVA_FQ_SOURCES)
 	$(COMPILE_JAVA_SOURCES)
 
+# Note, the manifest is also included in the class files jar
+# so that the manifest can be quieried for the current version
+# information
 build_jar: java_sources
-	cd lib && jar cf $(JAR_CLASSES_NAME) $(JAVA_NOLIB_CLASSES)
 	sed s/__GIT_VERSION_INFO__/$(GIT_VERSION)/ conf/manifest.mf > $(TEMPFILE)
+	cd lib && jar cfm $(JAR_CLASSES_NAME) $(TEMPFILE) $(JAVA_NOLIB_CLASSES)
 	jar cfm $(LIB_DIR)/$(JAR_NAME) $(TEMPFILE) $(LIB_DIR)/$(JAR_CLASSES_NAME) $(LOG4J_JARS) $(JUNIT_JAR) $(HAM_JAR)
 	rm -f $(TEMPFILE)
 	
