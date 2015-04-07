@@ -10,7 +10,7 @@
         
   <appender name="ConsoleAppender" class="org.apache.log4j.ConsoleAppender">
     <layout class="org.apache.log4j.EnhancedPatternLayout">
-      <param name="ConversionPattern" value="%d{ss.SSS}/%p/%C/%t '%m'\n"/>
+      <param name="ConversionPattern" value="%d{ss.SSS}:%p:%C:%t: %m\n"/>
     </layout>
   </appender>
 

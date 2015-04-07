@@ -29,4 +29,4 @@ build_jar: java_sources
 	rm -f $(TEMPFILE)
 	
 clean:
-	rm -rf $(JAVA_CLASSES) $(LIB_DIR)/$(JAR_NAME)
+	rm -rf $(JAVA_CLASSES) $(LIB_DIR)/$(JAR_NAME) $(LIB_DIR)/$(JAR_CLASSES_NAME)
