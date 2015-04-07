@@ -1,8 +1,10 @@
 
 package cs523.project2;
 
+
 /*
  * Diary.java
+ * 
  *
  * Code originally from the Allen Telescope Array
  * Control System. I wrote this code in 2008
