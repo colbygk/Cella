@@ -1,6 +1,4 @@
-
 package cs523.project2;
-
 
 /*
  * Cella.java
@@ -8,13 +6,7 @@ package cs523.project2;
 
 import java.io.PrintStream;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
-import org.apache.log4j.Level;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.xml.DOMConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.EnhancedPatternLayout;
+import org.apache.commons.cli.Options;
 
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -22,9 +14,8 @@ import java.util.jar.Attributes;
 import java.util.Map;
 import java.net.URISyntaxException;
 import java.io.IOException;
-import sun.reflect.Reflection;
 
-public class Cella
+public class Cella extends Loggable
 {
   protected static Diary mDiary = null;
   static PrintStream err = System.err;
@@ -60,32 +51,31 @@ public class Cella
 
   }
 
-  /**
-   * Gets the initialized log4j logger.
-   * @return the Logger.
-   **/
-  public Diary getDiary()
-  {
-    if ( mDiary != null )
-      return mDiary;
-    else
-      return getStaticDiary();
-  }
-
-  public static Diary getStaticDiary()
-  {
-    return( new Diary( Reflection.getCallerClass(2) ) );
-  }
-
   public void Start()
   {
+  }
+
+  private Options setupCommandLineOptions()
+  {
+    Options o = new Options();
+
+    o.addOption( "r", true, "Specify rule number (Mitchell Format)" );
+
+    return o;
+  }
+
+  private void handleCommandLine( String [] args )
+  {
+    Options o = setupCommandLineOptions();
+
   }
 
   public static void main ( String [] args )
   {
     try
     {
-      new Cella().Start();
+      Cella cella = new Cella();
+      cella.handleCommandLine( args );
     }
     catch ( Exception ex )
     {
