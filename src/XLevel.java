@@ -1,4 +1,6 @@
 
+package cs523.project2;
+
 /**
  * 
  * Class for extending log4j to provide deeper tracing levels beyond

@@ -1,4 +1,6 @@
 
+package cs523.project2;
+
 /*
  * Cella.java
  */
@@ -44,7 +46,7 @@ public class Cella
 
   public void Start()
   {
-
+    mDiary.info(" Cellular Automata");
   }
 
   public static void main ( String [] args )

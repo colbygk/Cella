@@ -1,3 +1,6 @@
+
+package cs523.project2;
+
 /*
  * Diary.java
  *
