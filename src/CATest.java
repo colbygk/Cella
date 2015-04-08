@@ -88,6 +88,7 @@ public class CATest extends Loggable
       ca.initialize( "0001011101" );
       ca.setRule( 23 );
       ca.setRadius( 1 );
+      ca.setStopIfStatic( false );
       ca.buildRulesMap();
       int i = ca.iterate( 10 );
       assertTrue( ca.toString().equals( "0000111110" ) );
@@ -102,6 +103,7 @@ public class CATest extends Loggable
       ca.setRule( 44 );
       ca.setRadius( 1 );
       ca.buildRulesMap();
+      ca.setStopIfStatic( false );
       int i = ca.iterate( 10 );
       mDiary.trace( "ca: " + ca.toString() );
       mDiary.trace( "i: " + i );

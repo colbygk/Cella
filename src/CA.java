@@ -7,6 +7,7 @@ package cs523.project2;
  */
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.HashMap;
 import java.util.BitSet;
 
@@ -37,7 +38,7 @@ public class CA extends Loggable
   private byte[] mCA = null;
   private byte[] mMidCA = null;
 
-  Map<String, byte[]> mRules = null;
+  Map<Neighborhood, byte[]> mRules = null;
 
   private boolean mPrintEachIteration = false;
   public void printEachIteration( boolean s ) { mPrintEachIteration = s; }
@@ -45,13 +46,15 @@ public class CA extends Loggable
   private boolean mChangedLastStep = false;
   public boolean hasChanged() { return mChangedLastStep; }
 
-  private boolean mStopIfStatic = false;
+  private boolean mStopIfStatic = true;
   public void setStopIfStatic ( boolean s ) { mStopIfStatic = s; }
   public boolean stopIfStatic () { return ( mStopIfStatic && mChangedLastStep == false ); }
 
   private int mIterations = 200;
   public void setIterations ( int i ) { mIterations = i; }
   public int getIterations () { return mIterations; }
+
+  private Neighborhood mCachedHood = null;
 
   PrintStream out = System.out;
 
@@ -71,7 +74,7 @@ public class CA extends Loggable
 
     // Defaults to 100
     // Good enough for 2^5 rules or Radius 2 
-    mRules = new HashMap<String, byte[]>();
+    mRules = new HashMap<Neighborhood, byte[]>();
 
     zero = (new String("0")).getBytes( StandardCharsets.US_ASCII );
     one  = (new String("1")).getBytes( StandardCharsets.US_ASCII );
@@ -113,19 +116,26 @@ public class CA extends Loggable
     int k = 0;
     int n = j;
 
+    mCachedHood = new Neighborhood( mDiameter ); // Used for stepping through iterations
+
     BitSet ruleBits = BitSet.valueOf( new long[]{ mRule } );
 
     while ( k < j )
     {
       n--;
-      mRules.put( binaryBytesToString( numToBinaryBytes( n, mDiameter ) ),
-          (ruleBits.get( (int)k ) == true ? one : zero) );
+
+//      mRules.put( binaryBytesToString( numToBinaryBytes( n, mDiameter ) ),
+//          (ruleBits.get( (int)k ) == true ? one : zero) );
+
+        mRules.put( Neighborhood.numToNeighborhood( mDiameter, n ),
+            (ruleBits.get( (int)k ) == true ? one : zero) );
 
       if ( mDiary.getLevel().isGreaterOrEqual( XLevel.TRACE4 ) )
       {
-        mDiary.trace3( "  rule: " + (new String(numToBinaryBytes( n, mDiameter ), StandardCharsets.US_ASCII ))
-            + ": " + (ruleBits.get( (int)k ) ? "1" : "0") );
+        Neighborhood nghb = Neighborhood.numToNeighborhood( mDiameter, n );
+        mDiary.trace3( "  rule: " + nghb.toString() + ":" + binaryBytesToString(mRules.get( nghb )) );
       }
+
       k++;
     }
   }
@@ -139,7 +149,7 @@ public class CA extends Loggable
   {
     mChangedLastStep = false;
 
-    byte [] neighborhood = new byte[ mDiameter ];
+//    byte [] neighborhood = new byte[ mDiameter ];
     int l = mWidth;
     int d;
     int c;
@@ -154,11 +164,14 @@ public class CA extends Loggable
         if ( c < 0 )
           c = mWidth + c;
 
-        neighborhood[d] = mCA[c % mWidth];
+        mCachedHood.set(d, mCA[c % mWidth]);
+
+//        neighborhood[d] = mCA[c % mWidth];
+//
         d++;
       }
 
-      mMidCA[l] = mRules.get( binaryBytesToString( neighborhood ))[0];
+      mMidCA[l] = mRules.get( mCachedHood )[0];
 
       if ( mMidCA[l] != mCA[l] )
         mChangedLastStep = true;

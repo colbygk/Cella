@@ -201,23 +201,26 @@ public class Cella extends Loggable
         int [] iters = new int[]{ 5000, 50000, 500000, 5000000 };
         long start, end;
         byte [] b = new byte[4];
+        int radius = mySharona.getRadius();
+        int ni = 0;
 
         for ( int i : iters )
         {
           mySharona = new CA();
+          mySharona.setStopIfStatic( false );
           mySharona.printEachIteration( false );
           mySharona.setIterations( i );
           mySharona.randomized();
           r.nextBytes( b );
           mySharona.setRule( ByteBuffer.wrap(b).getInt() );
-          mySharona.setRadius( 2 );
+          mySharona.setRadius( radius );
           mySharona.buildRulesMap();
           start = System.nanoTime();
-          mySharona.iterate();
+          ni = mySharona.iterate();
           end = System.nanoTime();
 
-          out.println( String.format( " %07d: %10.0f iter/sec (%3.2f s)",
-                i, (i/((end-start)/1e9)), (end-start)/1e9) );
+          out.println( String.format( " %07d: %10.0f iter/sec (%3.2f s, %d)",
+                i, (i/((end-start)/1e9)), (end-start)/1e9, ni) );
         }
 
         System.exit(0);
