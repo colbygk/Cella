@@ -10,44 +10,225 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.BitSet;
 
+import java.io.UnsupportedEncodingException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+
+import java.security.SecureRandom;
+
+
 public class CA extends Loggable
 {
   protected static Diary mDiary = null;
 
-  private int mLength = 0;
+  public static final int DEFAULT_WIDTH = 121;
+
+  private int mWidth = DEFAULT_WIDTH;
+  public int getWidth() { return mWidth; }
+
   private int mRadius = 0;
   private int mDiameter = 0;
   private long mRule = 0;
 
-  Map<Byte[], Byte[]> mRules = null;
+  private byte[] zero; 
+  private byte[] one;
 
-  protected CA()
+  private boolean mCAready = false;
+  private byte[] mCA = null;
+  private byte[] mMidCA = null;
+
+  Map<String, byte[]> mRules = null;
+
+  private boolean mPrintEachIteration = false;
+  public void printEachIteration( boolean s ) { mPrintEachIteration = s; }
+
+  private boolean mChangedLastStep = false;
+  public boolean hasChanged() { return mChangedLastStep; }
+
+  private boolean mStopIfStatic = false;
+  public void setStopIfStatic ( boolean s ) { mStopIfStatic = s; }
+  public boolean stopIfStatic () { return ( mStopIfStatic && mChangedLastStep == false ); }
+
+  private int mIterations = 200;
+  public void setIterations ( int i ) { mIterations = i; }
+  public int getIterations () { return mIterations; }
+
+  PrintStream out = System.out;
+
+  public CA ()
+  {
+    this( DEFAULT_WIDTH );
+  }
+
+  public CA ( int l )
   {
     mDiary = getDiary();
-    mDiary.trace3( "Instantiating CA()" );
+    mDiary.trace3( "Instantiating CA() length:" + l );
+
+    mWidth = l;
+    mCA = new byte[ mWidth ];
+    mMidCA = new byte[ mWidth ];
 
     // Defaults to 100
     // Good enough for 2^5 rules or Radius 2 
-    mRules = new HashMap<Byte[], Byte[]>();
+    mRules = new HashMap<String, byte[]>();
+
+    zero = (new String("0")).getBytes( StandardCharsets.US_ASCII );
+    one  = (new String("1")).getBytes( StandardCharsets.US_ASCII );
   }
 
-  public void setRule( long R )
+  public void setRule ( long R )
   {
     mRule = R;
   }
+  public long getRule () { return mRule; }
 
-  public void setRadius( int R )
+  public void setRadius ( int R )
   {
     mRadius = R;
     mDiameter = mRadius*2 + 1;
   }
-  public int getRadius() { return mRadius; }
-  public int getDiameter() { return mDiameter; }
+  public int getRadius () { return mRadius; }
+  public int getDiameter () { return mDiameter; }
 
-  public String ruleBitsToString()
+  public byte [] numToBinaryBytes ( long i, int width ) 
   {
-   // return BitSet.valueOf(new long[]{ mRule }).toString();
-   String fmt = "%" + mDiameter + "s";
-    return String.format(fmt, Long.toBinaryString( mRule ) ).replace(' ','0');
+    String fmt = "%" + width + "s";
+    return String.format(fmt, (Long.toBinaryString( i ))).replace(' ','0').getBytes( StandardCharsets.US_ASCII );
+  }
+
+  public String binaryBytesToString ( byte [] b )
+  {
+    return new String( b, StandardCharsets.US_ASCII );
+  }
+
+  public String ruleToString ()
+  {
+    return new String(numToBinaryBytes( mRule, 1 << mDiameter ),  StandardCharsets.US_ASCII );
+  }
+
+  public void buildRulesMap ()
+  { 
+    int j = (1 << mDiameter);
+    int k = 0;
+    int n = j;
+
+    BitSet ruleBits = BitSet.valueOf( new long[]{ mRule } );
+
+    while ( k < j )
+    {
+      n--;
+      mRules.put( binaryBytesToString( numToBinaryBytes( n, mDiameter ) ),
+          (ruleBits.get( (int)k ) == true ? one : zero) );
+
+      if ( mDiary.getLevel().isGreaterOrEqual( XLevel.TRACE4 ) )
+      {
+        mDiary.trace3( "  rule: " + (new String(numToBinaryBytes( n, mDiameter ), StandardCharsets.US_ASCII ))
+            + ": " + (ruleBits.get( (int)k ) ? "1" : "0") );
+      }
+      k++;
+    }
+  }
+
+  public String toString ()
+  {
+    return new String( mCA, StandardCharsets.US_ASCII );
+  }
+
+  public void step ()
+  {
+    mChangedLastStep = false;
+
+    byte [] neighborhood = new byte[ mDiameter ];
+    int l = mWidth;
+    int d;
+    int c;
+
+    while ( l-- > 0 )
+    {
+      d = 0;
+
+      while ( d < mDiameter )
+      {
+        c = (l - mRadius + d);
+        if ( c < 0 )
+          c = mWidth + c;
+
+        neighborhood[d] = mCA[c % mWidth];
+        d++;
+      }
+
+      mMidCA[l] = mRules.get( binaryBytesToString( neighborhood ))[0];
+
+      if ( mMidCA[l] != mCA[l] )
+        mChangedLastStep = true;
+    }
+
+    mCA = mMidCA;
+  }
+
+  public int iterate ()
+  {
+    mDiary.trace5( "iterate()" );
+
+    return this.iterate( mIterations );
+  }
+
+  public int iterate ( int i )
+  {
+    mDiary.trace5( "iterate("+i+")" );
+    int j = i;
+
+    if ( mCAready == false )
+      throw new RuntimeException( "CA not assigned an initial condition!" );
+
+    while ( j > 0 )
+    {
+      if ( mPrintEachIteration )
+      {
+        out.println( "  " + this.toString() );
+      }
+
+      step();
+      j--;
+
+      if ( stopIfStatic() )
+        break;
+    }
+
+    return ( i-j );
+  }
+
+  public void initialize ( String s )
+  {
+    mCA = s.getBytes( StandardCharsets.US_ASCII );
+    mCAready = true;
+  }
+
+  public byte [] raw ()
+  {
+    return mCA;
+  }
+
+  public void randomized ()
+  {
+    SecureRandom r = new SecureRandom();
+    byte b[] = new byte[ mWidth ];
+    r.nextBytes( b );
+    int j = mWidth;
+
+    while ( j-- > 0 )
+    {
+      // Modulo in Java can give negative results
+      int k = b[j] % 2;
+
+      if ( k < 0 )
+        k += 2;
+
+      b[j] = (byte)(k + (byte)48);
+    }
+
+    mCA = b;
+    mCAready = true;
   }
 }

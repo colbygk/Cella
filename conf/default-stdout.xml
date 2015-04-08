@@ -15,6 +15,7 @@
   </appender>
 
   <root>
+    <!--priority value = "TRACE5#cs523.project2.XLevel" /-->
     <priority value = "info" />
     <appender-ref ref = "ConsoleAppender"/>
   </root>

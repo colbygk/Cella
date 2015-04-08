@@ -308,7 +308,7 @@ public class Diary
         BasicConfigurator.configure(
             new ConsoleAppender(
               new EnhancedPatternLayout(
-                "%d{yyyy-MM-dd HH:mm:ss.SSS Z}{America/Los_Angeles} ATA: {%p} {%C} {%t} {%m}%n")));
+                "%d{yyyy-MM-dd HH:mm:ss.SSS Z}{America/Los_Angeles}:%p:%F:%L %m%n")));
         basicConfigCalled = true;
         mLog.log(XLevel.TRACE1,  " log4j configuration from: BasicConfigurator(...)" );
       }

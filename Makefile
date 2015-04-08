@@ -11,15 +11,18 @@ HAM_JAR=$(LIB_DIR)/junit/hamcrest-core-1.3.jar
 COMMONS_CLI_JAR=$(LIB_DIR)/commons/commons-cli-1.2.jar
 JAVA_REFLECTION_SOURCES = Diary.java XLevel.java Loggable.java
 JAVA_FQ_REFLECTION_SOURCES = $(JAVA_REFLECTION_SOURCES:%.java=$(SRC_DIR)/%.java)
-JAVA_SOURCES = Cella.java CA.java
+JAVA_TEST_SOURCES = CATest.java
+JAVA_SOURCES = CA.java Cella.java $(JAVA_TEST_SOURCES)
 JAVA_FQ_SOURCES = $(JAVA_SOURCES:%.java=$(SRC_DIR)/%.java)
 JAVA_NOLIB_CLASSES = $(patsubst %.java,$(PACKAGE)/%.class,$(JAVA_SOURCES) $(JAVA_REFLECTION_SOURCES))
+JAVA_REFLECTION_CLASSES = $(patsubst %.java,$(LIB_DIR)/$(PACKAGE)/%.class,$(JAVA_REFLECTION_SOURCES))
 JAVA_CLASSES = $(patsubst %.java,$(LIB_DIR)/$(PACKAGE)/%.class,$(JAVA_SOURCES))
 TEMPFILE := $(shell mktemp /tmp/manifest.XXXXX)
 
 
 COMPILE_JAVA_SOURCES = javac -sourcepath $(SRC_DIR) -classpath $(LIB_DIR):$(LOG4J_JARS):$(JUNIT_JAR):$(HAM_JAR):$(COMMONS_CLI_JAR) -d $(LIB_DIR) $(JAVA_FQ_SOURCES)
 COMPILE_JAVA_REFLECTION_SOURCES = javac -Xlint:none -XDignore.symbol.file=true -sourcepath $(SRC_DIR) -classpath $(LIB_DIR):$(LOG4J_JARS):$(JUNIT_JAR):$(HAM_JAR):$(COMMONS_CLI_JAR) -d $(LIB_DIR) $(JAVA_FQ_REFLECTION_SOURCES)
+RUN_JAVA_TESTS = java -Dlog4j.configuration=conf/default-stdout.xml -classpath $(LIB_DIR):$(LOG4J_JARS):$(JUNIT_JAR):$(HAM_JAR):$(COMMONS_CLI_JAR) org.junit.runner.JUnitCore $(patsubst %.java,$(subst /,.,$(PACKAGE)).%,$(JAVA_TEST_SOURCES))
 
 all: build_jar
 
@@ -37,6 +40,9 @@ build_jar: java_reflection_sources java_sources
 	cd lib && jar cfm $(JAR_CLASSES_NAME) $(TEMPFILE) $(JAVA_NOLIB_CLASSES)
 	jar cfm $(LIB_DIR)/$(JAR_NAME) $(TEMPFILE) $(LIB_DIR)/$(JAR_CLASSES_NAME) $(LOG4J_JARS) $(JUNIT_JAR) $(HAM_JAR) $(COMMONS_CLI_JAR)
 	rm -f $(TEMPFILE)
+
+test: java_reflection_sources java_sources
+	$(RUN_JAVA_TESTS)
 	
 clean:
-	rm -rf $(JAVA_CLASSES) $(LIB_DIR)/$(JAR_NAME) $(LIB_DIR)/$(JAR_CLASSES_NAME)
+	rm -rf $(JAVA_CLASSES) $(JAVA_REFLECTION_CLASSES) $(LIB_DIR)/$(JAR_NAME) $(LIB_DIR)/$(JAR_CLASSES_NAME)
