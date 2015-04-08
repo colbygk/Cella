@@ -17,6 +17,8 @@ import java.nio.charset.StandardCharsets;
 
 import java.security.SecureRandom;
 
+import java.math.BigInteger;
+
 
 public class CA extends Loggable
 {
@@ -29,7 +31,7 @@ public class CA extends Loggable
 
   private int mRadius = 0;
   private int mDiameter = 0;
-  private long mRule = 0;
+  private byte[] mRule = null;
 
   private byte[] zero; 
   private byte[] one;
@@ -80,11 +82,16 @@ public class CA extends Loggable
     one  = (new String("1")).getBytes( StandardCharsets.US_ASCII );
   }
 
-  public void setRule ( long R )
+  public void setRule ( long l )
   {
-    mRule = R;
+    setRule( BigInteger.valueOf( l ) );
   }
-  public long getRule () { return mRule; }
+
+  public void setRule ( BigInteger bi )
+  {
+    mRule = bi.toByteArray();
+  }
+  public byte [] getRule () { return mRule; }
 
   public void setRadius ( int R )
   {
@@ -107,7 +114,7 @@ public class CA extends Loggable
 
   public String ruleToString ()
   {
-    return new String(numToBinaryBytes( mRule, 1 << mDiameter ),  StandardCharsets.US_ASCII );
+    return (new BigInteger(mRule)).toString(2);
   }
 
   public void buildRulesMap ()
@@ -116,24 +123,28 @@ public class CA extends Loggable
     int k = 0;
     int n = j;
 
+    if ( mRule.length * 8 != j )
+    {
+      mDiary.warn( String.format(" NOTE, rule size (%d bits) does not match rules list"
+           + " of %d rules", mRule.length*8, j ) );
+    }
+      
     mCachedHood = new Neighborhood( mDiameter ); // Used for stepping through iterations
 
-    BitSet ruleBits = BitSet.valueOf( new long[]{ mRule } );
+    BitSet ruleBits = BitSet.valueOf( mRule );
 
     while ( k < j )
     {
       n--;
 
-//      mRules.put( binaryBytesToString( numToBinaryBytes( n, mDiameter ) ),
-//          (ruleBits.get( (int)k ) == true ? one : zero) );
-
-        mRules.put( Neighborhood.numToNeighborhood( mDiameter, n ),
-            (ruleBits.get( (int)k ) == true ? one : zero) );
+      mRules.put( Neighborhood.numToNeighborhood( mDiameter, n ),
+          (ruleBits.get( (int)k ) == true ? one : zero) );
 
       if ( mDiary.getLevel().isGreaterOrEqual( XLevel.TRACE4 ) )
       {
         Neighborhood nghb = Neighborhood.numToNeighborhood( mDiameter, n );
-        mDiary.trace3( "  rule: " + nghb.toString() + ":" + binaryBytesToString(mRules.get( nghb )) );
+        mDiary.trace3( "  rule: " + nghb.toString() + ":"
+            + binaryBytesToString(mRules.get( nghb )) );
       }
 
       k++;

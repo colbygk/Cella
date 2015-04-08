@@ -4,6 +4,8 @@ package cs523.project2;
 import org.junit.*;
 import static org.junit.Assert.*;
 
+import java.math.BigInteger;
+
 public class CATest extends Loggable
 {
 
@@ -57,12 +59,12 @@ public class CATest extends Loggable
     {
       CA ca = new CA( 10 );
       ca.initialize( "0001011101" );
-      ca.setRule( 1030123201 );
+      ca.setRule( BigInteger.valueOf( 1030123201 ) );
       ca.setRadius( 2 );
       ca.buildRulesMap();
       ca.step();
-      mDiary.trace( "ca: " + ca.toString() );
-      assertTrue( ca.toString().equals( "0111001001" ) );
+      mDiary.trace3( "*****ca: " + ca.toString() );
+      assertTrue( ca.toString().equals( "0100001110" ) );
     }
 
   @Test

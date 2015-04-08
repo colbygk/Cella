@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.math.BigInteger;
 
 public class Cella extends Loggable
 {
@@ -144,12 +145,12 @@ public class Cella extends Loggable
       mDiary.trace5( "  Mitchell option" );
       if ( cl.hasOption( MITCHELLOPTION ) )
       {
-        mySharona.setRule( Long.valueOf( cl.getOptionValue( MITCHELLOPTION ) ) );
+        mySharona.setRule( new BigInteger( cl.getOptionValue( MITCHELLOPTION ) ) );
       }
       else
       {
-        // Majority Rule is default
-        mySharona.setRule( 23 );
+        // Majority Rule, radius 1 is default
+        mySharona.setRule( BigInteger.valueOf( 23 ) );
       }
       sb.append( " rule:" + mySharona.ruleToString() + "/" + mySharona.getRule() );
 
@@ -160,7 +161,7 @@ public class Cella extends Loggable
       }
       else
       {
-        mySharona.setRadius( 2 );
+        mySharona.setRadius( 1 );
       }
       sb.append( " radius:" + mySharona.getRadius() );
 
@@ -197,7 +198,7 @@ public class Cella extends Loggable
       mDiary.trace5( "   bench option" );
       if ( cl.hasOption( BENCHOPTION ) )
       {
-        SecureRandom r = new SecureRandom();
+        SecureRandom sr = new SecureRandom();
         int [] iters = new int[]{ 5000, 50000, 500000, 5000000 };
         long start, end;
         byte [] b = new byte[4];
@@ -211,8 +212,7 @@ public class Cella extends Loggable
           mySharona.printEachIteration( false );
           mySharona.setIterations( i );
           mySharona.randomized();
-          r.nextBytes( b );
-          mySharona.setRule( ByteBuffer.wrap(b).getInt() );
+          mySharona.setRule( new BigInteger( mySharona.getDiameter(), sr ) );
           mySharona.setRadius( radius );
           mySharona.buildRulesMap();
           start = System.nanoTime();
