@@ -2,6 +2,12 @@
 
 LIB_DIR=./lib
 
+if [ ! -f ${LIB_DIR}/cs523-project2.jar ];
+then
+  echo "Cannot find jar file, attempting to build and test"
+  make all test || exit
+fi
+
 java -Dlog4j.configuration=conf/default-stdout.xml -jar ${LIB_DIR}/cs523-project2.jar $*
 
 
