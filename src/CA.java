@@ -263,4 +263,5 @@ public class CA extends Loggable
     Map<Neighborhood, byte[]> tm = new TreeMap<Neighborhood, byte[]>(mRules);
     return tm.entrySet();
   }
+
 }
