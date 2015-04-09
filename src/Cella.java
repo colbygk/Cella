@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.math.BigInteger;
+import java.util.Map;
+import java.util.Set;
+import java.util.Iterator;
 
 public class Cella extends Loggable
 {
@@ -39,6 +42,7 @@ public class Cella extends Loggable
   static final String INITIALOPTION = "I";
   static final String HELPOPTION = "h";
   static final String BENCHOPTION = "b";
+  static final String PRINTRULESMAPOPTION = "M";
 
   private CA mySharona = null;
 
@@ -57,9 +61,9 @@ public class Cella extends Loggable
       JarFile thisJar = new JarFile( path );
       Attributes a = thisJar.getManifest().getMainAttributes();
 
-      out.println("- " + a.getValue(Attributes.Name.IMPLEMENTATION_VENDOR)  );
-      out.println("- " + a.getValue(Attributes.Name.IMPLEMENTATION_TITLE)   );
-      out.println("- Version:" + a.getValue(Attributes.Name.IMPLEMENTATION_VERSION) );
+      out.println("% " + a.getValue(Attributes.Name.IMPLEMENTATION_VENDOR)  );
+      out.println("% " + a.getValue(Attributes.Name.IMPLEMENTATION_TITLE)   );
+      out.println("% Version:" + a.getValue(Attributes.Name.IMPLEMENTATION_VERSION) );
     }
     catch ( URISyntaxException urise )
     {
@@ -93,6 +97,7 @@ public class Cella extends Loggable
     o.addOption( STATICSTOPSOPTION, false, "Stop if CA is static" );
     o.addOption( HELPOPTION, false, "Help info" );
     o.addOption( BENCHOPTION, false, "benchmark" );
+    o.addOption( PRINTRULESMAPOPTION, false, "Print out rules map" );
     o.addOption( WIDTHOPTION, true, "Set width of CA" );
 
     return o;
@@ -124,7 +129,7 @@ public class Cella extends Loggable
       {
         mySharona = new CA();
       }
-      sb.append( " width:" + mySharona.getWidth() );
+      sb.append( "%  width:" + mySharona.getWidth() + "\n" );
 
       mDiary.trace5( "  Initial option" );
       if ( cl.hasOption( INITIALOPTION ) )
@@ -152,7 +157,8 @@ public class Cella extends Loggable
         // Majority Rule, radius 1 is default
         mySharona.setRule( BigInteger.valueOf( 23 ) );
       }
-      sb.append( " rule:" + mySharona.ruleToString() + "/" + mySharona.getRule() );
+      sb.append( "%  rule:" + mySharona.ruleToString() + "/"
+          + new BigInteger( mySharona.getRule() ) + "\n");
 
       mDiary.trace5( "   Radius option" );
       if ( cl.hasOption( RADIUSOPTION ) )
@@ -163,7 +169,7 @@ public class Cella extends Loggable
       {
         mySharona.setRadius( 1 );
       }
-      sb.append( " radius:" + mySharona.getRadius() );
+      sb.append( "%  radius:" + mySharona.getRadius() + "\n" );
 
       mDiary.trace5( "   Randomize option" );
       if ( cl.hasOption( RANDOMIZEOPTION ) )
@@ -176,7 +182,7 @@ public class Cella extends Loggable
       {
         mySharona.setIterations( Integer.valueOf( cl.getOptionValue( ITERATIONSOPTION ) ) );
       }
-      sb.append( " iterations:" + mySharona.getIterations() );
+      sb.append( "%  iterations:" + mySharona.getIterations() + "\n" );
 
       mDiary.trace5( "   Print option" );
       if ( cl.hasOption( PRINTITEROPTION ) )
@@ -193,7 +199,26 @@ public class Cella extends Loggable
       {
         mySharona.setStopIfStatic( false );
       }
-      sb.append( " stopstatic:" + mySharona.stopIfStatic() );
+      sb.append( "%  stopstatic:" + mySharona.stopIfStatic() + "\n" );
+
+      mDiary.trace5( "     Print rules map option" );
+      if ( cl.hasOption( PRINTRULESMAPOPTION ) )
+      {
+        mySharona.buildRulesMap();
+        
+        sb.append( "%  rules map:\n" );
+        Set s = mySharona.sortedEntrySet();
+        Iterator it = s.iterator();
+        while ( it.hasNext() )
+        {
+          Map.Entry e = (Map.Entry)it.next();
+          sb.append( "%    " + ((Neighborhood)(e.getKey())).toString() +
+            ": " + (((byte[])(e.getValue()))[0] - 48) + "\n" );
+        } 
+      }
+      else
+      {
+      }
 
       mDiary.trace5( "   bench option" );
       if ( cl.hasOption( BENCHOPTION ) )
@@ -231,7 +256,7 @@ public class Cella extends Loggable
       err.println( "Error parsing: " + pe.getMessage() );
     }
 
-    out.println( "- " + sb.toString() );
+    out.println( sb.toString() );
   }
 
   public static void main ( String [] args )

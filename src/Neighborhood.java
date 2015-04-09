@@ -3,9 +3,13 @@ package cs523.project2;
 import java.util.Arrays;
 import java.nio.charset.StandardCharsets;
 
+import java.lang.Comparable;
 
-public class Neighborhood
+public class Neighborhood extends Loggable implements Comparable<Neighborhood>
 {
+
+  private Diary mDiary = getStaticDiary();
+
   private byte [] mHood = null;
   public int length = 0;
 
@@ -83,4 +87,24 @@ public class Neighborhood
 
     return e;
   }
+
+  // Note that this implicitly means there is
+  // a limitation of < 32 for neighborhood size
+  // which corrisponds to a max radius of
+  // 14 for sorting, given two's compliment
+  // unsigned int
+  @Override
+    public int compareTo( Neighborhood n )
+    {
+      long nl = 0;
+      long ml = 0;
+
+      for ( int j = 0, s = n.mHood.length-1; j < n.mHood.length; j++, s-- )
+        if ( n.mHood[j] > 48 ) nl |= (1 << s);
+
+      for ( int j = 0, s = this.mHood.length-1; j < this.mHood.length; j++, s-- )
+        if ( this.mHood[j] > 48 ) ml |= (1 << s);
+
+      return ( (int)(ml - nl) );
+    }
 }

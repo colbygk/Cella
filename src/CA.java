@@ -9,6 +9,8 @@ package cs523.project2;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.HashMap;
+import java.util.TreeMap;
+import java.util.Set;
 import java.util.BitSet;
 
 import java.io.UnsupportedEncodingException;
@@ -107,7 +109,7 @@ public class CA extends Loggable
     return String.format(fmt, (Long.toBinaryString( i ))).replace(' ','0').getBytes( StandardCharsets.US_ASCII );
   }
 
-  public String binaryBytesToString ( byte [] b )
+  public static String binaryBytesToString ( byte [] b )
   {
     return new String( b, StandardCharsets.US_ASCII );
   }
@@ -254,5 +256,11 @@ public class CA extends Loggable
 
     mCA = b;
     mCAready = true;
+  }
+
+  public Set sortedEntrySet ()
+  {
+    Map<Neighborhood, byte[]> tm = new TreeMap<Neighborhood, byte[]>(mRules);
+    return tm.entrySet();
   }
 }
