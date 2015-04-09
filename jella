@@ -1,0 +1,73 @@
+#!/usr/bin/env jruby
+
+$CLASSPATH << "lib/cs523-project2.jar"
+
+# java -Dlog4j.configuration=conf/default-stdout.xml -jar ${LIB_DIR}/cs523-project2.jar $*
+
+include Java
+
+import 'cs523.project2.CA'
+
+import java.awt.Color
+import javax.swing.JFrame
+import javax.swing.JPanel
+import java.math.BigInteger
+import java.util.Random
+
+class Canvas < JPanel
+
+  def paintComponent g
+    self.drawCA g
+  end
+
+  def drawCA g
+
+    ca = CA.new( 450 )
+    ca.randomized
+    ca.setRule( BigInteger.new( 128, Random.new ) )
+    ca.setRadius( 3 ) 
+    ca.buildRulesMap
+    g.setColor Color.new 0, 0, 0
+    for y in 0..500
+      ca.step
+      x = 10
+      ca.toString.each_char do |c|
+        if c == "1"
+          g.drawLine( x, y, x+1, y )
+        end
+        x = x + 1
+      end
+    end
+
+
+  end
+
+end
+
+class Jella < JFrame
+  
+    def initialize
+        super "Jella"
+        
+        self.initUI
+    end
+      
+    def initUI
+        
+      canvas = Canvas.new
+      self.getContentPane.add canvas
+
+      self.setSize 500, 600
+      self.setDefaultCloseOperation JFrame::EXIT_ON_CLOSE
+      self.setLocationRelativeTo nil
+      self.setVisible true
+
+    end
+
+end
+
+Jella.new
+
+
+
+
