@@ -24,8 +24,8 @@ class Canvas < JPanel
 
     ca = CA.new( 450 )
     ca.randomized
-    ca.setRule( BigInteger.new( 128, Random.new ) )
-    ca.setRadius( 3 ) 
+    ca.setRule( BigInteger.new( 32, Random.new ) )
+    ca.setRadius( 2 ) 
     ca.buildRulesMap
     g.setColor Color.new 0, 0, 0
     for y in 0..500
