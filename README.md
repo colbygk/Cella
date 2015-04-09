@@ -30,6 +30,10 @@ will attempt to build, run the tests and then launch it.
      -w <arg>   Set width of CA
 
 
+There is also _jella_, a script written in JRuby, which
+requires JRuby to be installed (brew install jruby under
+OS X).
 
+    $ ./jella
 
 
