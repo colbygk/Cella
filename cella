@@ -8,6 +8,6 @@ then
   make all test || exit
 fi
 
-java -Dlog4j.configuration=conf/default-stdout.xml -jar ${LIB_DIR}/cs523-project2.jar $*
+java -Dlog4j.configuration=conf/default-stdout.xml -jar ${LIB_DIR}/cs523-project2-cella.jar $*
 
 

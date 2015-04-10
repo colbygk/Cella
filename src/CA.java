@@ -93,6 +93,14 @@ public class CA extends Loggable implements Comparable<CA>
     setRule( BigInteger.valueOf( l ) );
   }
 
+  public void setRule( byte [] r )
+  {
+    mRule = new byte[ r.length ];
+
+    for ( int j = 0; j < r.length; j++ )
+      mRule[j] = r[j];
+  }
+
   public void setRule ( BigInteger bi )
   {
     mRule = bi.toByteArray();
