@@ -174,7 +174,7 @@ public class Cella extends Loggable
       mDiary.trace5( "   Randomize option" );
       if ( cl.hasOption( RANDOMIZEOPTION ) )
       {
-        mySharona.randomized();
+        mySharona.randomizedIC();
       }
 
       mDiary.trace5( "   Iteration option" );
@@ -236,7 +236,7 @@ public class Cella extends Loggable
           mySharona.setStopIfStatic( false );
           mySharona.printEachIteration( false );
           mySharona.setIterations( i );
-          mySharona.randomized();
+          mySharona.randomizedIC();
           mySharona.setRule( new BigInteger( mySharona.getDiameter(), sr ) );
           mySharona.setRadius( radius );
           mySharona.buildRulesMap();

@@ -14,9 +14,9 @@ public class CATest extends Loggable
   @Test
     public void test_randomziedCA ()
     {
-      mDiary.trace3( "Testing: randomizedCA()" );
+      mDiary.trace3( "Testing: randomizedICCA()" );
       CA ca = new CA( 20 );
-      ca.randomized();
+      ca.randomizedIC();
       String s = ca.toString();
       mDiary.trace3( " CA: " + s );
       assertTrue( s.length() == 20 );
@@ -33,7 +33,7 @@ public class CATest extends Loggable
     public void test_onlyZeroAndOneValuesInCA ()
     {
       CA ca = new CA( 20 );
-      ca.randomized();
+      ca.randomizedIC();
       for ( byte b : ca.raw() )
       {
         if ( b < 48 || b > 49 )
@@ -109,7 +109,7 @@ public class CATest extends Loggable
       int i = ca.iterate( 10 );
       mDiary.trace( "ca: " + ca.toString() );
       mDiary.trace( "i: " + i );
-      assertTrue( ca.toString().equals( "1000000101" ) );
+      assertTrue( ca.toString().equals( "0000000100" ) );
       assertTrue( i == 10 );
     }
 }

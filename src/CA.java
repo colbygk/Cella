@@ -21,8 +21,9 @@ import java.security.SecureRandom;
 
 import java.math.BigInteger;
 
+import java.lang.Comparable;
 
-public class CA extends Loggable
+public class CA extends Loggable implements Comparable<CA>
 {
   protected static Diary mDiary = null;
 
@@ -38,9 +39,10 @@ public class CA extends Loggable
   private byte[] zero; 
   private byte[] one;
 
-  private boolean mCAready = false;
-  private byte[] mCA = null;
-  private byte[] mMidCA = null;
+  private boolean mICready = false;
+  private byte[] mIC = null;
+  private byte[] mMidIC = null;
+  private byte[] mICcopy = null;
 
   Map<Neighborhood, byte[]> mRules = null;
 
@@ -58,6 +60,8 @@ public class CA extends Loggable
   public void setIterations ( int i ) { mIterations = i; }
   public int getIterations () { return mIterations; }
 
+  private int mFitness = 0;
+
   private Neighborhood mCachedHood = null;
 
   PrintStream out = System.out;
@@ -73,8 +77,8 @@ public class CA extends Loggable
     mDiary.trace3( "Instantiating CA() length:" + l );
 
     mWidth = l;
-    mCA = new byte[ mWidth ];
-    mMidCA = new byte[ mWidth ];
+    mIC = new byte[ mWidth ];
+    mMidIC = new byte[ mWidth ];
 
     // Defaults to 100
     // Good enough for 2^5 rules or Radius 2 
@@ -155,7 +159,7 @@ public class CA extends Loggable
 
   public String toString ()
   {
-    return new String( mCA, StandardCharsets.US_ASCII );
+    return new String( mIC, StandardCharsets.US_ASCII );
   }
 
   public void step ()
@@ -177,20 +181,22 @@ public class CA extends Loggable
         if ( c < 0 )
           c = mWidth + c;
 
-        mCachedHood.set(d, mCA[c % mWidth]);
+        mCachedHood.set(d, mIC[c % mWidth]);
 
-//        neighborhood[d] = mCA[c % mWidth];
+//        neighborhood[d] = mIC[c % mWidth];
 //
         d++;
       }
 
-      mMidCA[l] = mRules.get( mCachedHood )[0];
+      mMidIC[l] = mRules.get( mCachedHood )[0];
 
-      if ( mMidCA[l] != mCA[l] )
+      if ( mMidIC[l] != mIC[l] )
         mChangedLastStep = true;
     }
 
-    mCA = mMidCA;
+    mICcopy = mIC;
+    mIC = mMidIC;
+    mMidIC = mICcopy;
   }
 
   public int iterate ()
@@ -205,7 +211,7 @@ public class CA extends Loggable
     mDiary.trace5( "iterate("+i+")" );
     int j = i;
 
-    if ( mCAready == false )
+    if ( mICready == false )
       throw new RuntimeException( "CA not assigned an initial condition!" );
 
     while ( j > 0 )
@@ -227,16 +233,16 @@ public class CA extends Loggable
 
   public void initialize ( String s )
   {
-    mCA = s.getBytes( StandardCharsets.US_ASCII );
-    mCAready = true;
+    mIC = s.getBytes( StandardCharsets.US_ASCII );
+    mICready = true;
   }
 
   public byte [] raw ()
   {
-    return mCA;
+    return mIC;
   }
 
-  public void randomized ()
+  public void randomizedIC ()
   {
     SecureRandom r = new SecureRandom();
     byte b[] = new byte[ mWidth ];
@@ -254,8 +260,8 @@ public class CA extends Loggable
       b[j] = (byte)(k + (byte)48);
     }
 
-    mCA = b;
-    mCAready = true;
+    mIC = b;
+    mICready = true;
   }
 
   public Set sortedEntrySet ()
@@ -263,5 +269,23 @@ public class CA extends Loggable
     Map<Neighborhood, byte[]> tm = new TreeMap<Neighborhood, byte[]>(mRules);
     return tm.entrySet();
   }
+
+  // NB: fitness always returns 0 at the moment
+  public int fitness()
+  {
+    return mFitness;
+  }
+
+  @Override
+    public boolean equals( Object ca )
+    {
+      return ((CA)ca).fitness() == this.fitness();
+    }
+
+  @Override
+    public int compareTo( CA ca )
+    {
+      return( this.fitness() - ca.fitness() );
+    }
 
 }
