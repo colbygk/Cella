@@ -32,12 +32,19 @@ public class Gella extends Loggable
   static PrintStream err = System.err;
   static PrintStream out = System.out;
 
-  static final String WIDTHOPTION = "r";
+  static final String WIDTHOPTION = "w";
   static final String RADIUSOPTION = "r";
-  static final String POPOPTION = "w";
+  static final String POPOPTION = "p";
   static final String ITERATIONSOPTION = "i";
   static final String HELPOPTION = "h";
   static final String BENCHOPTION = "b";
+  static final String GENERATIONSOPTION = "g";
+
+  private int mWidth = 0;
+  private int mRadius = 0;
+  private int mPop = 0;
+  private int mGenerations = 0;
+  private int mIterations = 0;
 
   private GA mySharona = null;
 
@@ -75,8 +82,8 @@ public class Gella extends Loggable
   {
     mDiary.trace5( "start()" );
 
-    mySharona.buildRulesMap();
-    mySharona.iterate();
+    GA ga = new GA( mPop, mWidth, mRadius, mIterations, mGenerations );
+    ga.runSimulation();
   }
 
   private Options setupCommandLineOptions()
@@ -87,7 +94,8 @@ public class Gella extends Loggable
     o.addOption( ITERATIONSOPTION, true, "Number of iterations [200]" );
     o.addOption( HELPOPTION, false, "Help info" );
     o.addOption( BENCHOPTION, false, "benchmark" );
-    o.addOption( WIDTHOPTION, true, "Set width of CA" );
+    o.addOption( WIDTHOPTION, true, "Set width of CA's" );
+    o.addOption( POPOPTION, true, "Set population of CA's" );
     o.addOption( GENERATIONSOPTION, true, "Set number of generations to run" );
 
     return o;
@@ -96,7 +104,6 @@ public class Gella extends Loggable
   private void handleCommandLine( String [] args )
   {
     StringBuilder sb = new StringBuilder();
-    int width = 0
 
     try
     {
@@ -111,109 +118,65 @@ public class Gella extends Loggable
         System.exit(0);
       }
 
+      mDiary.trace5( "  Population option" );
+      if ( cl.hasOption( POPOPTION ) )
+      {
+        mPop = Integer.valueOf( cl.getOptionValue( POPOPTION ) );
+      }
+      else
+      {
+        mPop = GA.getDefaultPop();
+      }
+      sb.append( "%  pop:" + mPop + "\n" );
+
       mDiary.trace5( "  Width option" );
       if ( cl.hasOption( WIDTHOPTION ) )
       {
-        mySharona = new CA( Integer.valueOf( cl.getOptionValue( WIDTHOPTION ) ) );
+        mWidth = Integer.valueOf( cl.getOptionValue( WIDTHOPTION ) );
       }
       else
       {
-        mySharona = new CA();
+        mWidth = GA.getDefaultWidth();
       }
-      sb.append( "%  width:" + mySharona.getWidth() + "\n" );
-
-      mDiary.trace5( "  Initial option" );
-      if ( cl.hasOption( INITIALOPTION ) )
-      {
-        String s = cl.getOptionValue( INITIALOPTION );
-
-        if ( s.length() != mySharona.getWidth() )
-          throw new RuntimeException( "Initial string does not match selected width!" );
-
-        mySharona.initialize( s );
-      }
-      else
-      {
-        if ( cl.hasOption( RANDOMIZEOPTION ) == false )
-          mDiary.warn( "Initial string will be all zeros! Use either -I or -R" );
-      }
-
-      mDiary.trace5( "  Mitchell option" );
-      if ( cl.hasOption( MITCHELLOPTION ) )
-      {
-        mySharona.setRule( new BigInteger( cl.getOptionValue( MITCHELLOPTION ) ) );
-      }
-      else
-      {
-        // Majority Rule, radius 1 is default
-        mySharona.setRule( BigInteger.valueOf( 23 ) );
-      }
-      sb.append( "%  rule:" + mySharona.ruleToString() + "/"
-          + new BigInteger( mySharona.getRule() ) + "\n");
+      sb.append( "%  width:" + mWidth + "\n" );
 
       mDiary.trace5( "   Radius option" );
       if ( cl.hasOption( RADIUSOPTION ) )
       {
-        mySharona.setRadius( Integer.valueOf( cl.getOptionValue( RADIUSOPTION ) ) );
+        mRadius =  Integer.valueOf( cl.getOptionValue( RADIUSOPTION ) );
       }
       else
       {
-        mySharona.setRadius( 1 );
+        mRadius = GA.getDefaultRadius();
       }
-      sb.append( "%  radius:" + mySharona.getRadius() + "\n" );
-
-      mDiary.trace5( "   Randomize option" );
-      if ( cl.hasOption( RANDOMIZEOPTION ) )
-      {
-        mySharona.randomizedIC();
-      }
+      sb.append( "%  radius:" + mRadius + "\n" );
 
       mDiary.trace5( "   Iteration option" );
       if ( cl.hasOption( ITERATIONSOPTION ) )
       {
-        mySharona.setIterations( Integer.valueOf( cl.getOptionValue( ITERATIONSOPTION ) ) );
-      }
-      sb.append( "%  iterations:" + mySharona.getIterations() + "\n" );
-
-      mDiary.trace5( "   Print option" );
-      if ( cl.hasOption( PRINTITEROPTION ) )
-      {
-        mySharona.printEachIteration( true );
-      }
-
-      mDiary.trace5( "   Static option" );
-      if ( cl.hasOption( STATICSTOPSOPTION ) )
-      {
-        mySharona.setStopIfStatic( true );
+        mIterations = Integer.valueOf( cl.getOptionValue( ITERATIONSOPTION ) );
       }
       else
       {
-        mySharona.setStopIfStatic( false );
+        mIterations = GA.getDefaultIterations();
       }
-      sb.append( "%  stopstatic:" + mySharona.stopIfStatic() + "\n" );
+      sb.append( "%  iterations:" + mIterations + "\n" );
 
-      mDiary.trace5( "     Print rules map option" );
-      if ( cl.hasOption( PRINTRULESMAPOPTION ) )
+      mDiary.trace5( "   Generations option" );
+      if ( cl.hasOption( GENERATIONSOPTION ) )
       {
-        mySharona.buildRulesMap();
-        
-        sb.append( "%  rules map:\n" );
-        Set s = mySharona.sortedEntrySet();
-        Iterator it = s.iterator();
-        while ( it.hasNext() )
-        {
-          Map.Entry e = (Map.Entry)it.next();
-          sb.append( "%    " + ((Neighborhood)(e.getKey())).toString() +
-            ": " + (((byte[])(e.getValue()))[0] - 48) + "\n" );
-        } 
+        mGenerations = Integer.valueOf( cl.getOptionValue( GENERATIONSOPTION ) );
       }
       else
       {
+        mGenerations = GA.getDefaultGenerations();
       }
+      sb.append( "%  generations:" + mGenerations + "\n" );
 
       mDiary.trace5( "   bench option" );
       if ( cl.hasOption( BENCHOPTION ) )
       {
+        /*
         SecureRandom sr = new SecureRandom();
         int [] iters = new int[]{ 5000, 50000, 500000, 5000000 };
         long start, end;
@@ -240,6 +203,7 @@ public class Gella extends Loggable
         }
 
         System.exit(0);
+        */
       }
     }
     catch ( ParseException pe )

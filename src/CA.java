@@ -137,7 +137,7 @@ public class CA extends Loggable implements Comparable<CA>
     int k = 0;
     int n = j;
 
-    if ( mRule.length * 8 != j )
+    if ( mRule.length * 8 > j )
     {
       mDiary.warn( String.format(" NOTE, rule size (%d bits) does not match rules list"
            + " of %d rules", mRule.length*8, j ) );
