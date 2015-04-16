@@ -1,6 +1,6 @@
 #!/usr/bin/env jruby
 
-$CLASSPATH << "lib/cs523-project2.jar"
+$CLASSPATH << "lib/cs523-project2-cella.jar"
 
 # java -Dlog4j.configuration=conf/default-stdout.xml -jar ${LIB_DIR}/cs523-project2.jar $*
 
