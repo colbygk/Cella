@@ -41,8 +41,9 @@ build_jars: java_reflection_sources java_sources
 	sed s/__GIT_VERSION_INFO__/$(GIT_VERSION)/ conf/cella-manifest.mf > $(TEMPFILE1)
 	sed s/__GIT_VERSION_INFO__/$(GIT_VERSION)/ conf/gella-manifest.mf > $(TEMPFILE2)
 #cd lib && jar cf $(JAR_CLASSES_NAME) $(JAVA_NOLIB_CLASSES) $(PACKAGE)/GA$$1.class $(PACKAGE)/GA$$Worker.class
-	cd lib && jar cf $(JAR_CLASSES_NAME) $(PACKAGE)/*.class
+	cd lib && jar cfm $(JAR_CLASSES_NAME) $(TEMPFILE1) $(PACKAGE)/*.class
 	jar cfm $(LIB_DIR)/$(JAR_CELLA_NAME) $(TEMPFILE1) $(LIB_DIR)/$(JAR_CLASSES_NAME) $(LOG4J_JARS) $(JUNIT_JAR) $(HAM_JAR) $(COMMONS_CLI_JAR)
+	cd lib && jar cfm $(JAR_CLASSES_NAME) $(TEMPFILE2) $(PACKAGE)/*.class
 	jar cfm $(LIB_DIR)/$(JAR_GELLA_NAME) $(TEMPFILE2) $(LIB_DIR)/$(JAR_CLASSES_NAME) $(LOG4J_JARS) $(JUNIT_JAR) $(HAM_JAR) $(COMMONS_CLI_JAR)
 	rm -f $(TEMPFILE1)
 	rm -f $(TEMPFILE2)

@@ -206,6 +206,7 @@ public class GA extends Loggable
     // for a real simulation
     
     long start = System.nanoTime();
+    int relit = 0;
 
     for ( int gn = 0; gn < mGenerations; gn++ )
     {
@@ -216,7 +217,7 @@ public class GA extends Loggable
         for ( byte [] ic : mInitialConditions )
         {
           ca.setIC( ic );
-          ca.iterate();
+          relit += ca.iterate();
         }
       }
 
@@ -231,7 +232,8 @@ public class GA extends Loggable
 
     }
     long end = System.nanoTime();
-    int ni = 50*100*200;
+    int ni = mGenerations * mRules.size() * mInitialConditions.size() * mIterations;
+    ni = relit;
 
     out.println( String.format( " %07d iters %10.0f iter/sec (%3.2f s)",
           ni, (ni/((end-start)/1e9)), (end-start)/1e9, ni) );
