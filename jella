@@ -22,13 +22,12 @@ class Canvas < JPanel
 
   def drawCA g
 
-    ca = CA.new( 1900 )
+    ca = CA.new( 500, 3 )
     ca.randomizedIC
-    ca.setRule( BigInteger.new( 32, Random.new ) )
-    ca.setRadius( 2 ) 
+    ca.setRule( BigInteger.new( 128, Random.new ) )
     ca.buildRulesMap
     g.setColor Color.new 0, 0, 0
-    for y in 0..950
+    for y in 0..700
       ca.step
       x = 10
       ca.toString.each_char do |c|
@@ -57,7 +56,7 @@ class Jella < JFrame
       canvas = Canvas.new
       self.getContentPane.add canvas
 
-      self.setSize 2000, 1000
+      self.setSize 600, 800
       self.setDefaultCloseOperation JFrame::EXIT_ON_CLOSE
       self.setLocationRelativeTo nil
       self.setVisible true

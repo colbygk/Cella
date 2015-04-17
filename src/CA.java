@@ -12,11 +12,13 @@ import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Set;
 import java.util.BitSet;
+import java.util.Arrays;
 
 import java.io.UnsupportedEncodingException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
+import java.util.Random;
 import java.security.SecureRandom;
 
 import java.math.BigInteger;
@@ -27,14 +29,18 @@ public class CA extends Loggable implements Comparable<CA>
 {
   protected static Diary mDiary = null;
 
-  public static final int DEFAULT_WIDTH = 121;
+  public static final int DEFAULT_ICWIDTH = 121;
+  public static final int DEFAULT_RULEWIDTH = 32;
 
-  private int mWidth = DEFAULT_WIDTH;
-  public int getWidth() { return mWidth; }
+  private int mICWidth = DEFAULT_ICWIDTH;
+  private int mRuleWidthBits = DEFAULT_RULEWIDTH;
+  public int getICWidth() { return mICWidth; }
+  public int getRuleWidthInBits() { return mRuleWidthBits; }
 
   private int mRadius = 0;
   private int mDiameter = 0;
-  private byte[] mRule = null;
+  private BigInteger mBRule = null;
+  private BitSet mRule = null;
 
   private byte[] zero; 
   private byte[] one;
@@ -68,17 +74,18 @@ public class CA extends Loggable implements Comparable<CA>
 
   public CA ()
   {
-    this( DEFAULT_WIDTH );
+    this( DEFAULT_ICWIDTH, DEFAULT_RULEWIDTH );
   }
 
-  public CA ( int l )
+  public CA ( int l, int r )
   {
     mDiary = getDiary();
     mDiary.trace3( "Instantiating CA() length:" + l );
 
-    mWidth = l;
-    mIC = new byte[ mWidth ];
-    mMidIC = new byte[ mWidth ];
+    mICWidth = l;
+    setRadius( r );
+    mIC = new byte[ mICWidth ];
+    mMidIC = new byte[ mICWidth ];
 
     // Defaults to 100
     // Good enough for 2^5 rules or Radius 2 
@@ -88,32 +95,55 @@ public class CA extends Loggable implements Comparable<CA>
     one  = (new String("1")).getBytes( StandardCharsets.US_ASCII );
   }
 
+  public void randomizedRule ()
+  {
+    SecureRandom sr = new SecureRandom();
+    randomizedRule( sr );
+  }
+
+  public void randomizedRule ( SecureRandom sr )
+  {
+    setRule( (int)(getRuleWidthInBits()/8), sr );
+  }
+
   public void setRule ( long l )
   {
-    setRule( BigInteger.valueOf( l ) );
+    mRule = BitSet.valueOf( new long[]{ l } );
   }
 
-  public void setRule( byte [] r )
+  public void setRule ( BitSet bs )
   {
-    mRule = new byte[ r.length ];
-
-    for ( int j = 0; j < r.length; j++ )
-      mRule[j] = r[j];
+    mRule = bs;
   }
 
-  public void setRule ( BigInteger bi )
+  public void setRule ( byte [] r )
   {
-    mRule = bi.toByteArray();
+    mRule = BitSet.valueOf( r );
   }
-  public byte [] getRule () { return mRule; }
+
+  public void setRule ( Random r )
+  {
+    setRule( this.getRequiredBytesForRule(), r );
+  }
+
+  public void setRule ( int n, Random r )
+  {
+    byte [] b = new byte[n];
+    r.nextBytes( b );
+    mRule = BitSet.valueOf( b );
+    b = null;
+  }
+  public BitSet getRule () { return mRule; }
 
   public void setRadius ( int R )
   {
     mRadius = R;
     mDiameter = mRadius*2 + 1;
+    mRuleWidthBits = (1 << mDiameter);
   }
   public int getRadius () { return mRadius; }
   public int getDiameter () { return mDiameter; }
+  public int getRequiredBytesForRule() { return (mDiameter + 7)/8; }
 
   public byte [] numToBinaryBytes ( long i, int width ) 
   {
@@ -128,7 +158,17 @@ public class CA extends Loggable implements Comparable<CA>
 
   public String ruleToString ()
   {
-    return (new BigInteger(mRule)).toString(2);
+    byte [] bs = new byte[ (int)(mRuleWidthBits/8) ];
+    byte [] mba = mRule.toByteArray();
+    StringBuffer sb = new StringBuffer();
+
+    for ( int k = bs.length-1; k >= 0; k-- )
+      bs[k] = mba[k];
+
+    for ( byte b : bs )
+      sb.append( Integer.toBinaryString( b ) );
+
+    return sb.toString();
   }
 
   public void buildRulesMap ()
@@ -137,22 +177,20 @@ public class CA extends Loggable implements Comparable<CA>
     int k = 0;
     int n = j;
 
-    if ( mRule.length * 8 > j )
+    if ( mRuleWidthBits < j )
     {
       mDiary.warn( String.format(" NOTE, rule size (%d bits) does not match rules list"
-           + " of %d rules", mRule.length*8, j ) );
+           + " of %d rules", mRuleWidthBits, j ) );
     }
       
     mCachedHood = new Neighborhood( mDiameter ); // Used for stepping through iterations
-
-    BitSet ruleBits = BitSet.valueOf( mRule );
 
     while ( k < j )
     {
       n--;
 
       mRules.put( Neighborhood.numToNeighborhood( mDiameter, n ),
-          (ruleBits.get( (int)k ) == true ? one : zero) );
+          (mRule.get( (int)k ) == true ? one : zero) );
 
       if ( mDiary.getLevel().isGreaterOrEqual( XLevel.TRACE4 ) )
       {
@@ -175,7 +213,7 @@ public class CA extends Loggable implements Comparable<CA>
     mChangedLastStep = false;
 
 //    byte [] neighborhood = new byte[ mDiameter ];
-    int l = mWidth;
+    int l = mICWidth;
     int d;
     int c;
 
@@ -187,11 +225,11 @@ public class CA extends Loggable implements Comparable<CA>
       {
         c = (l - mRadius + d);
         if ( c < 0 )
-          c = mWidth + c;
+          c = mICWidth + c;
 
-        mCachedHood.set(d, mIC[c % mWidth]);
+        mCachedHood.set(d, mIC[c % mICWidth]);
 
-//        neighborhood[d] = mIC[c % mWidth];
+//        neighborhood[d] = mIC[c % mICWidth];
 //
         d++;
       }
@@ -250,12 +288,28 @@ public class CA extends Loggable implements Comparable<CA>
     return mIC;
   }
 
+  public void setIC ( byte [] ic )
+  {
+    mIC = Arrays.copyOf( ic, ic.length );
+    mICready = true;
+  }
+  public byte [] getIC () { return mIC; }
+
   public void randomizedIC ()
   {
-    SecureRandom r = new SecureRandom();
-    byte b[] = new byte[ mWidth ];
+    setIC( randomizedIC( new SecureRandom(), mICWidth ) );
+  }
+
+  public static byte [] randomizedIC ( int width )
+  {
+    return randomizedIC( new SecureRandom(), width );
+  }
+
+  public static byte [] randomizedIC ( SecureRandom r, int width )
+  {
+    byte b[] = new byte[ width ];
     r.nextBytes( b );
-    int j = mWidth;
+    int j = width;
 
     while ( j-- > 0 )
     {
@@ -268,8 +322,7 @@ public class CA extends Loggable implements Comparable<CA>
       b[j] = (byte)(k + (byte)48);
     }
 
-    mIC = b;
-    mICready = true;
+    return b;
   }
 
   public Set sortedEntrySet ()

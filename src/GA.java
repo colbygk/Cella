@@ -10,10 +10,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import java.security.SecureRandom;
+import java.util.Random;
+import java.util.BitSet;
+import java.util.Arrays;
 
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.BrokenBarrierException;
+
 
 import java.math.BigInteger;
 import java.io.PrintStream;
@@ -22,22 +29,31 @@ public class GA extends Loggable
 {
   protected static Diary mDiary = null;
 
-  public static final int DEFAULT_POP = 100;
-  public static final int DEFAULT_WIDTH = 121;
+  public static final int DEFAULT_POP = 50;
+  public static final int DEFAULT_ICCOUNT = 100;
+  public static final int DEFAULT_ICWIDTH = 121;
   public static final int DEFAULT_RADIUS = 2;
   public static final int DEFAULT_ITERATIONS = 200;
   public static final int DEFAULT_GENERATIONS = 50;
   private int mPop = 0;
+  private int mICCount = 0;
   private int mRadius = 0;
-  private int mWidth = 0;
+  public int getRadius() { return mRadius; }
+  private int mICWidth = 0;
+  public int getICWidth() { return mICWidth; }
+  private int mRuleWidth = 0;
+  public int getRuleWidth() { return mRuleWidth; }
   private int mIterations = 0;
+  public int getIterations() { return mIterations; }
   private int mGenerations = 0;
-  private int mGenerationCount = 0;
+  public int getGenerations() { return mGenerations; }
   private boolean mKeepGoing = true;
 
-  private List<CA> mCurrent = null;
-  private List<CA> mNew = null;
-  private List<CA> mCopy = null;
+  private List<byte[]> mInitialConditions = null;
+  public List<byte[]> getICs() { return mInitialConditions; }
+  private List<CA> mRules = null;
+  public List<CA> getRules() { return mRules; }
+
   private int mNumThreads = 4;
 
   private SecureRandom mSR = null;
@@ -47,44 +63,120 @@ public class GA extends Loggable
 
   public GA ()
   {
-    this( DEFAULT_POP, DEFAULT_WIDTH, DEFAULT_RADIUS, DEFAULT_ITERATIONS, DEFAULT_GENERATIONS );
+    this( DEFAULT_POP, DEFAULT_ICCOUNT, DEFAULT_ICWIDTH, DEFAULT_RADIUS, DEFAULT_ITERATIONS,
+        DEFAULT_GENERATIONS );
   }
 
-  public GA ( int p, int w, int r, int i, int g )
+  public GA ( int p, int ic, int w, int r, int i, int g )
   {
     mDiary = getDiary();
     mDiary.trace3( "Instantiating GA() pop:" + p + " radius:" + r + " iter:" + i + " gen:" + g);
 
     mPop = p;
+    mICCount = ic;
     mRadius = r;
-    mWidth = w;
+    mICWidth = w;
     mIterations = i;
     mGenerations = g;
 
-    mCurrent = new ArrayList<CA>();
-    mNew = new ArrayList<CA>();
+    mRules = new ArrayList<CA>();
+    mInitialConditions = new ArrayList<byte[]>();
 
     mSR = new SecureRandom();
     for ( int k = 0; k < mPop; k++ )
-    {
-      mCurrent.add( initCA( mSR ) );
-      mNew.add( null ); // Prime the pump
-    }
+      mRules.add( initCA( mSR )  );
+
+    byte[] bs = null;
+    for ( int k = 0; k < mICCount; k++ )
+      mInitialConditions.add( CA.randomizedIC( mICWidth ) );
+
   }
 
+
   public static int getDefaultPop () { return DEFAULT_POP; }
-  public static int getDefaultWidth () { return DEFAULT_WIDTH; }
+  public static int getDefaultICCount () { return DEFAULT_ICCOUNT; }
+  public static int getDefaultICWidth () { return DEFAULT_ICWIDTH; }
   public static int getDefaultRadius () { return DEFAULT_RADIUS; }
   public static int getDefaultIterations () { return DEFAULT_ITERATIONS; }
   public static int getDefaultGenerations () { return DEFAULT_GENERATIONS; }
+
+  public int getRuleWidthInBits () { return mRuleWidth; }
+
+  public CA crossOver ( CA a, CA b )
+  {
+    if ( a.getRuleWidthInBits() != b.getRuleWidthInBits() )
+    {
+      throw new RuntimeException( "Whoa there, this implementation cannot do cross over with" +
+          " mismatched rule bit widths (different radii): " +
+          "a:" + a + " b:" + b );
+    }
+
+    int rw = a.getRuleWidthInBits();
+    int crossPoint = mSR.nextInt( rw );
+    BitSet ar = a.getRule();
+    BitSet br = b.getRule();
+    BitSet newR = (BitSet)ar.clone();
+
+    for ( int k = crossPoint; k < rw; k++ )
+      if ( newR.get(k) != br.get(k) )
+        newR.flip(k);
+
+    CA ca = new CA( a.getICWidth(), a.getRuleWidthInBits() );
+    ca.setRule( newR );
+    ca.setIterations( mIterations );
+    ca.buildRulesMap();
+    ca.setStopIfStatic( true );
+
+    return ca;
+  }
+
+  public void mutate ( CA a, Random r, int n, boolean abs_hamming )
+  {
+    BitSet gene = a.getRule();
+    int b, k = 0;
+    int rw = a.getRuleWidthInBits();
+    Boolean s;
+
+    if ( abs_hamming )
+    {
+      Map<Integer, Boolean> mutamap = new HashMap<Integer, Boolean>();
+
+      // Algorithm can be slow, because it is not keeping track of a list
+      // of open mutations and then selecting a random number based on that
+      while ( k < n-1 )
+      {
+        b = r.nextInt( rw );
+        Integer i = Integer.valueOf( b );
+        s = mutamap.get( i );
+        if ( s != null && s )
+        {
+          // No-op
+        }
+        else
+        {
+          k++;
+          gene.flip( b );
+          mutamap.put( b, true );
+        }
+      }
+    }
+    else
+    {
+      for ( k = 0; k < n; k++ )
+      {
+        b = r.nextInt( rw );
+        gene.flip( b );
+      }
+    }
+  }
+
   public CA initCA ( SecureRandom s )
   {
-    CA ca = new CA( mWidth );
+    CA ca = new CA( mICWidth, mRadius );
 
-    ca.randomizedIC();
     ca.setIterations( mIterations );
-    ca.setRadius( mRadius );
-    ca.setRule( new BigInteger( ca.getDiameter(), s ) );
+    // Radius determines rule width dimensions
+    ca.setRule( s );
     ca.buildRulesMap();
     ca.setStopIfStatic( true );
 
@@ -93,10 +185,9 @@ public class GA extends Loggable
 
   public CA copyCA ( CA oldCA )
   {
-    CA newCA = new CA( mWidth );
-    newCA.randomizedIC();
+    CA newCA = new CA( oldCA.getICWidth(), oldCA.getRadius() );
+    newCA.setIC( Arrays.copyOf( oldCA.getIC(), oldCA.getICWidth() ) );
     newCA.setIterations( mIterations );
-    newCA.setRadius( mRadius );
     newCA.setRule( oldCA.getRule() );
 
     // NB: This should really only be called after
@@ -108,93 +199,43 @@ public class GA extends Loggable
     return newCA;
   }
 
-
-  public void setupBarrier ( int n )
+  public void runTestSimulation ()
   {
-    mNumThreads = n;
 
-    mBarrier = new CyclicBarrier( mNumThreads,
-        new Runnable()
-        {
-          public void run()
-          {
-            int k;
-            Collections.sort( mCurrent );
+    // Filler to get an idea of how long this will take to run
+    // for a real simulation
+    
+    long start = System.nanoTime();
 
-            // Copy top ten
-            for ( int j = 0; j < 10; j++ )
-              mNew.set( j, copyCA( mCurrent.get(j) ) );
-
-            for ( int j = 10; j < 100; j++ )
-            {
-              k = mSR.nextInt( 90 ) + 10;
-              mNew.set( j, copyCA( mCurrent.get(j) ) );
-            }
-
-            mCopy = mCurrent;
-            mCurrent = mNew;
-            mNew = mCopy;
-            mGenerationCount++;
-
-            if ( mGenerationCount == mGenerations )
-              mKeepGoing = false;
-          }
-        });
-  }
-
-  public void runSimulation ()
-  {
-    int parts = mPop / mNumThreads;
-
-    if ( mPop % mNumThreads != 0 )
+    for ( int gn = 0; gn < mGenerations; gn++ )
     {
-      mDiary.error( "*** There is currently no handling of a population " +
-          "size that is not evenly divisble by the number of threads launched" );
-      System.exit(-1);
-    }
-
-    setupBarrier( mNumThreads );
-    for ( int i = 0; i < mPop; i += parts )
-      new Thread( new Worker( i, i+parts-1 ) ).start();
-  }
-
-  class Worker implements Runnable
-  {
-    private int mStart = 0;
-    private int mFinish = 0;
-
-    public Worker ( int s, int f )
-    {
-      mStart = s;
-      mFinish = f;
-    }
-
-    public void run ()
-    {
-      int k = 0;
-      CA ca;
-
-      try
+      System.out.print( " generation "+gn );
+      for ( CA ca : mRules )
       {
-        while ( mKeepGoing )
+        System.out.print(".");
+        for ( byte [] ic : mInitialConditions )
         {
-          k = mStart;
-          while ( k != mFinish )
-          {
-            ca = mCurrent.get(k);
-            ca.iterate();
-            k++;
-          }
-
-          mBarrier.await();
+          ca.setIC( ic );
+          ca.iterate();
         }
       }
-      catch ( InterruptedException ie )
+
+      System.out.print("xover.mutate.");
+      for ( CA ca : mRules )
       {
+        crossOver( ca, ca );
+        mutate( ca, mSR, 1, false );
       }
-      catch ( BrokenBarrierException bbe )
-      {
-      }
+
+      System.out.println("done");
+
     }
+    long end = System.nanoTime();
+    int ni = 50*100*200;
+
+    out.println( String.format( " %07d iters %10.0f iter/sec (%3.2f s)",
+          ni, (ni/((end-start)/1e9)), (end-start)/1e9, ni) );
+    out.println( String.format( " total time: %3.2f", (end-start)/1e9 ) );
+
   }
 }

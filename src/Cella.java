@@ -123,20 +123,20 @@ public class Cella extends Loggable
       mDiary.trace5( "  Width option" );
       if ( cl.hasOption( WIDTHOPTION ) )
       {
-        mySharona = new CA( Integer.valueOf( cl.getOptionValue( WIDTHOPTION ) ) );
+        mySharona = new CA( Integer.valueOf( cl.getOptionValue( WIDTHOPTION ) ), 1 );
       }
       else
       {
         mySharona = new CA();
       }
-      sb.append( "%  width:" + mySharona.getWidth() + "\n" );
+      sb.append( "%  width:" + mySharona.getICWidth() + "\n" );
 
       mDiary.trace5( "  Initial option" );
       if ( cl.hasOption( INITIALOPTION ) )
       {
         String s = cl.getOptionValue( INITIALOPTION );
 
-        if ( s.length() != mySharona.getWidth() )
+        if ( s.length() != mySharona.getICWidth() )
           throw new RuntimeException( "Initial string does not match selected width!" );
 
         mySharona.initialize( s );
@@ -150,15 +150,15 @@ public class Cella extends Loggable
       mDiary.trace5( "  Mitchell option" );
       if ( cl.hasOption( MITCHELLOPTION ) )
       {
-        mySharona.setRule( new BigInteger( cl.getOptionValue( MITCHELLOPTION ) ) );
+        mySharona.setRule( new BigInteger( cl.getOptionValue( MITCHELLOPTION ) ).toByteArray() );
       }
       else
       {
         // Majority Rule, radius 1 is default
-        mySharona.setRule( BigInteger.valueOf( 23 ) );
+        mySharona.setRule( BigInteger.valueOf( 23 ).toByteArray() );
       }
       sb.append( "%  rule:" + mySharona.ruleToString() + "/"
-          + new BigInteger( mySharona.getRule() ) + "\n");
+          + new BigInteger( mySharona.getRule().toByteArray() ) + "\n");
 
       mDiary.trace5( "   Radius option" );
       if ( cl.hasOption( RADIUSOPTION ) )
@@ -237,8 +237,8 @@ public class Cella extends Loggable
           mySharona.printEachIteration( false );
           mySharona.setIterations( i );
           mySharona.randomizedIC();
-          mySharona.setRule( new BigInteger( mySharona.getDiameter(), sr ) );
           mySharona.setRadius( radius );
+          mySharona.setRule( (mySharona.getDiameter() + 7)/8, sr );
           mySharona.buildRulesMap();
           start = System.nanoTime();
           ni = mySharona.iterate();

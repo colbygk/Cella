@@ -38,11 +38,13 @@ public class Gella extends Loggable
   static final String ITERATIONSOPTION = "i";
   static final String HELPOPTION = "h";
   static final String BENCHOPTION = "b";
+  static final String ICOPTION = "c";
   static final String GENERATIONSOPTION = "g";
 
-  private int mWidth = 0;
+  private int mICWidth = 0;
   private int mRadius = 0;
   private int mPop = 0;
+  private int mICCount = 0;
   private int mGenerations = 0;
   private int mIterations = 0;
 
@@ -55,6 +57,8 @@ public class Gella extends Loggable
 
     try
     {
+      // Path is used to lift the version info out of the jar that this class
+      // is expected to be running out of.
       String path =
         Gella.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
 
@@ -78,12 +82,12 @@ public class Gella extends Loggable
 
   }
 
-  public void start()
+  public void start ()
   {
     mDiary.trace5( "start()" );
 
-    GA ga = new GA( mPop, mWidth, mRadius, mIterations, mGenerations );
-    ga.runSimulation();
+    GA ga = new GA( mPop, mICCount, mICWidth, mRadius, mIterations, mGenerations );
+    ga.runTestSimulation();
   }
 
   private Options setupCommandLineOptions()
@@ -97,6 +101,7 @@ public class Gella extends Loggable
     o.addOption( WIDTHOPTION, true, "Set width of CA's" );
     o.addOption( POPOPTION, true, "Set population of CA's" );
     o.addOption( GENERATIONSOPTION, true, "Set number of generations to run" );
+    o.addOption( ICOPTION, true, "Set number of Initial Conditions to use" );
 
     return o;
   }
@@ -129,16 +134,28 @@ public class Gella extends Loggable
       }
       sb.append( "%  pop:" + mPop + "\n" );
 
-      mDiary.trace5( "  Width option" );
-      if ( cl.hasOption( WIDTHOPTION ) )
+      mDiary.trace5( "  IC option" );
+      if ( cl.hasOption( ICOPTION ) )
       {
-        mWidth = Integer.valueOf( cl.getOptionValue( WIDTHOPTION ) );
+        mICCount = Integer.valueOf( cl.getOptionValue( ICOPTION ) );
       }
       else
       {
-        mWidth = GA.getDefaultWidth();
+        mICCount = GA.getDefaultICCount();
       }
-      sb.append( "%  width:" + mWidth + "\n" );
+      sb.append( "%  ic count:" + mICCount + "\n" );
+
+
+      mDiary.trace5( "  Width option" );
+      if ( cl.hasOption( WIDTHOPTION ) )
+      {
+        mICWidth = Integer.valueOf( cl.getOptionValue( WIDTHOPTION ) );
+      }
+      else
+      {
+        mICWidth = GA.DEFAULT_ICWIDTH;
+      }
+      sb.append( "%  width:" + mICWidth + "\n" );
 
       mDiary.trace5( "   Radius option" );
       if ( cl.hasOption( RADIUSOPTION ) )
