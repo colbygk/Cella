@@ -1,0 +1,46 @@
+\section{Background} \label{background}
+
+There is a long history of using agent-based models to investigate the emergence of communication 
+(e.g., \cite{goody_how_1995}, \cite{brooks_altruism_1994}, \cite{Steels97synthesisingthe}, \cite{steels_evolving_2003}). Very 
+broadly speaking, these models fall into two types. On the 'language game' approach, two agents are selected from a population and 
+forced to play a 'game', e.g., one agent linguistically names an object in the visual field of each agent, while the other attempts to use the 
+utterance as a cue for which object is being referred to; if the listener selects the wrong object, learning occurs so that the listener 
+acquires the speaker's word \cite{Steels2012}, \cite{Baronchelli06bootstrappingcommunication}.
+
+The second type of model is akin to cellular automata in design: A spatial map (e.g., grid) is populated with randomly-initialized agents 
+that interact only with their immediate neighbors. Under certain conditions, the internals of agents are adjusted so that they behave verbally 
+more like their neighbors, either within a generation (e.g., through reinforcement learning), or across generations (e.g., via a genetic algorithm). 
+After some number of iterations, a shared signaling system emerges. 
+
+Grim et. al.'s model is of the second type. Here we give a broad overview of the model and their results; details about implementation are given in the 
+next section. 
+
+The world is a two-dimensional toroidal grid, where each location contains an agent. Scattered 
+across the world are particles of food and poison, drifting randomly; food and poison are persistent and do not disappear from the world. 
+Agents are in one of two states: feeding or hidden. If an agent is in a feeding state and food lands on its location, the agent's score increases; 
+if poison lands on the agent while it is feeding, the agent's score decreases. Similarly, if an agent is in a hiding state and poison lands on 
+its location, the agent accrues no penalty, but if the agent is not hiding, then its score decreases.
+
+Agents cannot move, but they can change states (changing state incurs a small cost). Which state an agent chooses to enter is determined by sounds emitted by its neighbors, and which sound a neighbor emits is determined by the entities (food or poison) currently at that neighbor's location. For instance, a neighbor could have food in its location, 
+and as a result emit sound \textit{A}. When the agent hears \textit{A}, it chooses to enter a feeding state in the hope that the food particle's 
+random walk will take it into the agent's open mouth.
+
+Importantly, the mappings from (i) sounds to states and (ii) stimuli (food, poison, or both) to sounds are not fixed. Specifically, agents have 
+two single-layer perceptrons, one for each mapping. These are initially given random weights. In the \textit{scoring} phase, at each time step 
+each agent's score is adjusted according to their state and the entities in their location. Then, each agent generates a sound given the entities 
+at their location. Finally, each agent's state is adjusted according to how they process the sounds of their neighbors, and poison and food particles are 
+moved to a randomly chosen adjacent location.
+
+After some number of iterations, the simulation enters a \textit{training} phase: For each agent, find the neighbor 
+with the highest score, and train the agent on some subset of the input-output behavior of that neighbor. Continue alternating between scoring and 
+training phases until a shared lexicon emerges. That is, at some point we hope to find that the population has found weights such that 
+(i) all agents generate the same sound for the same stimuli, and (ii) all agents behave in the same (and perhaps optimal) way given the same sound. 
+If this happens, the population has succeeded in finding a shared lexicon, where the sounds generated are 'tuned' to the 
+stimulus-appropriate behaviors.
+
+Grim et. al. find that, in a population of 4096 agents (world dimensions of 64-by-64), the proportion of agents that converge to an \textit{optimal 
+strategy} - i.e., one where poison and food are mapped to distinct sounds, and where each of these sounds is associated with the appropriate behavior - 
+increases at each epoch, at least up to 300 epochs (the limit of the data they provide). 
+
+Unfortunately, they do not provide any concrete values (e.g., the \textit{y}-axis on their graphs is not labeled). Furthermore, they do not give information about average scores, or compare different environmental parameters, or neighborhood sizes, or give an analysis of non-optimal strategies that persist in the 
+population despite the presence of optimal ones. Part of our goal in this study was to rectify this situation.
