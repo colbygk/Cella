@@ -32,6 +32,7 @@ public class Gella extends Loggable
   static PrintStream err = System.err;
   static PrintStream out = System.out;
 
+  static final String THREADSOPTION = "t";
   static final String WIDTHOPTION = "w";
   static final String RADIUSOPTION = "r";
   static final String POPOPTION = "p";
@@ -47,6 +48,7 @@ public class Gella extends Loggable
   private int mICCount = 0;
   private int mGenerations = 0;
   private int mIterations = 0;
+  private int mMaxWorkers = CA.MAX_WORKERS;
 
   private GA mySharona = null;
 
@@ -87,7 +89,7 @@ public class Gella extends Loggable
     mDiary.trace5( "start()" );
 
     GA ga = new GA( mPop, mICCount, mICWidth, mRadius, mIterations, mGenerations );
-    ga.runTestSimulation();
+    ga.runTestSimulation( mMaxWorkers );
   }
 
   private Options setupCommandLineOptions()
@@ -99,6 +101,8 @@ public class Gella extends Loggable
     o.addOption( HELPOPTION, false, "Help info" );
     o.addOption( BENCHOPTION, false, "benchmark" );
     o.addOption( WIDTHOPTION, true, "Set width of CA's" );
+    o.addOption( THREADSOPTION, true, "Number of threads to use, defaults to: " +
+        CA.MAX_WORKERS );
     o.addOption( POPOPTION, true, "Set population of CA's" );
     o.addOption( GENERATIONSOPTION, true, "Set number of generations to run" );
     o.addOption( ICOPTION, true, "Set number of Initial Conditions to use" );
@@ -156,6 +160,17 @@ public class Gella extends Loggable
         mICWidth = GA.DEFAULT_ICWIDTH;
       }
       sb.append( "%  width:" + mICWidth + "\n" );
+
+      mDiary.trace5( "  Threads option" );
+      if ( cl.hasOption( THREADSOPTION ) )
+      {
+        mMaxWorkers = Integer.valueOf( cl.getOptionValue( THREADSOPTION ) );
+      }
+      else
+      {
+        mMaxWorkers = CA.MAX_WORKERS;
+      }
+      sb.append( "%  max workers:" + mMaxWorkers + "\n" );
 
       mDiary.trace5( "   Radius option" );
       if ( cl.hasOption( RADIUSOPTION ) )

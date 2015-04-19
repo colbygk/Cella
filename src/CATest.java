@@ -105,9 +105,86 @@ public class CATest extends Loggable
       ca.buildRulesMap();
       ca.setStopIfStatic( false );
       int i = ca.iterate( 10 );
-      mDiary.trace( "ca: " + ca.toString() );
-      mDiary.trace( "i: " + i );
       assertTrue( ca.toString().equals( "0000000100" ) );
       assertTrue( i == 10 );
+    }
+
+  @Test
+    public void test_setrule ()
+    {
+      CA ca = new CA( 10, 1 );
+      ca.setRule( 178 );
+      assertTrue( ca.getRuleAsBinaryString().equals( "10110010" ) );
+    }
+
+  @Test
+    public void test_rule201 ()
+    {
+      CA ca = new CA( 10, 1 );
+      ca.initialize( "1100010110" );
+      ca.setRule( 201 );
+      ca.buildRulesMap();
+      ca.setStopIfStatic( true );
+
+      // Do a full 10 steps of rule 201
+      ca.step();
+      assertTrue( ca.toString().equals( "0011100000" ) );
+      ca.step();
+      assertTrue( ca.toString().equals( "1101011111" ) );
+      ca.step();
+      assertTrue( ca.toString().equals( "1000001111" ) );
+      ca.step();
+      assertTrue( ca.toString().equals( "0111110111" ) );
+      ca.step();
+      assertTrue( ca.toString().equals( "0011100010" ) );
+      ca.step();
+      assertTrue( ca.toString().equals( "1101011101" ) );
+      ca.step();
+      assertTrue( ca.toString().equals( "1000001000" ) );
+      ca.step();
+      assertTrue( ca.toString().equals( "0111110111" ) );
+      ca.step();
+      assertTrue( ca.toString().equals( "0011100010" ) );
+      ca.step();
+      assertTrue( ca.toString().equals( "1101011101" ) );
+
+      // Redo the above, but allow for 10 iterations
+      ca.initialize( "1100010110" );
+      int i = ca.iterate( 10 );
+      assertTrue( i == 10 );
+      assertTrue( ca.toString().equals( "1101011101" ) );
+
+      // This should go to all 1's after 3 iterations
+      ca.initialize( "1010101010" );
+      i = ca.iterate( 10 );
+      assertTrue( i == 3 );
+      assertTrue( ca.toString().equals( "1111111111" ) );
+    }
+
+  @Test
+    public void test_checkrule ()
+    {
+      CA ca1 = new CA( 121, 1 );
+      CA ca2 = new CA( 121, 2 );
+      CA ca3 = new CA( 121, 3 );
+      
+      assertTrue( ca1.getRuleWidthInBits() == 8 );
+      assertTrue( ca1.getRequiredBytesForRule() == 1 );
+
+      assertTrue( ca2.getRuleWidthInBits() == 32 );
+      assertTrue( ca2.getRequiredBytesForRule() == 4 );
+
+      assertTrue( ca3.getRuleWidthInBits() == 128 );
+      assertTrue( ca3.getRequiredBytesForRule() == 16 );
+
+      byte b = (byte)255;
+      ca1.setRule( new byte[]{ b } );
+      ca2.setRule( new byte[]{ b, b, b, b } );
+      ca3.setRule( new byte[]{ b, b, b, b, b, b, b, b,
+                               b, b, b, b, b, b, b, b } );
+
+      assertTrue( ca1.getRule().cardinality() == 8 );
+      assertTrue( ca2.getRule().cardinality() == 32 );
+      assertTrue( ca3.getRule().cardinality() == 128 );
     }
 }

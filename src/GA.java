@@ -32,8 +32,8 @@ public class GA extends Loggable
   public static final int DEFAULT_POP = 50;
   public static final int DEFAULT_ICCOUNT = 100;
   public static final int DEFAULT_ICWIDTH = 121;
-  public static final int DEFAULT_RADIUS = 2;
-  public static final int DEFAULT_ITERATIONS = 200;
+  public static final int DEFAULT_RADIUS = 3;
+  public static final int DEFAULT_ITERATIONS = 300;
   public static final int DEFAULT_GENERATIONS = 50;
   private int mPop = 0;
   private int mICCount = 0;
@@ -47,14 +47,11 @@ public class GA extends Loggable
   public int getIterations() { return mIterations; }
   private int mGenerations = 0;
   public int getGenerations() { return mGenerations; }
-  private boolean mKeepGoing = true;
 
   private List<byte[]> mInitialConditions = null;
   public List<byte[]> getICs() { return mInitialConditions; }
   private List<CA> mRules = null;
   public List<CA> getRules() { return mRules; }
-
-  private int mNumThreads = 4;
 
   private SecureRandom mSR = null;
   private CyclicBarrier mBarrier = null;
@@ -176,7 +173,7 @@ public class GA extends Loggable
 
     ca.setIterations( mIterations );
     // Radius determines rule width dimensions
-    ca.setRule( s );
+    ca.setRule( 16, s );
     ca.buildRulesMap();
     ca.setStopIfStatic( true );
 
@@ -199,7 +196,7 @@ public class GA extends Loggable
     return newCA;
   }
 
-  public void runTestSimulation ()
+  public void runTestSimulation ( int nWorkers )
   {
 
     // Filler to get an idea of how long this will take to run
@@ -214,11 +211,14 @@ public class GA extends Loggable
       for ( CA ca : mRules )
       {
         System.out.print(".");
+        ca.iterateBackground( mInitialConditions, nWorkers );
+        /*
         for ( byte [] ic : mInitialConditions )
         {
           ca.setIC( ic );
           relit += ca.iterate();
         }
+        */
       }
 
       System.out.print("xover.mutate.");

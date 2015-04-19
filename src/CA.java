@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.HashMap;
 import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.BitSet;
 import java.util.Arrays;
@@ -19,15 +21,21 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 import java.security.SecureRandom;
 
 import java.math.BigInteger;
 
 import java.lang.Comparable;
 
-public class CA extends Loggable implements Comparable<CA>
+public class CA extends Loggable implements Comparable<CA>, Runnable
 {
   protected static Diary mDiary = null;
+
+
+  public static final int MAX_WORKERS = 4;
+  private int mMaxWorkers = MAX_WORKERS;
+  private Semaphore backgroundWork = null;
 
   public static final int DEFAULT_ICWIDTH = 121;
   public static final int DEFAULT_RULEWIDTH = 32;
@@ -42,8 +50,8 @@ public class CA extends Loggable implements Comparable<CA>
   private BigInteger mBRule = null;
   private BitSet mRule = null;
 
-  private byte[] zero; 
-  private byte[] one;
+  private static final byte[] zero = (new String("0")).getBytes( StandardCharsets.US_ASCII );
+  private static final byte[] one  = (new String("1")).getBytes( StandardCharsets.US_ASCII );
 
   private boolean mICready = false;
   private byte[] mIC = null;
@@ -91,8 +99,17 @@ public class CA extends Loggable implements Comparable<CA>
     // Good enough for 2^5 rules or Radius 2 
     mRules = new HashMap<Neighborhood, byte[]>();
 
-    zero = (new String("0")).getBytes( StandardCharsets.US_ASCII );
-    one  = (new String("1")).getBytes( StandardCharsets.US_ASCII );
+  }
+
+  public CA ( int l, int r, boolean cloning )
+  {
+    mDiary = getDiary();
+    mDiary.trace3( "Instantiating CA() length:" + l );
+
+    mICWidth = l;
+    setRadius( r );
+    mIC = new byte[ mICWidth ];
+    mMidIC = new byte[ mICWidth ];
   }
 
   public void randomizedRule ()
@@ -134,6 +151,7 @@ public class CA extends Loggable implements Comparable<CA>
     b = null;
   }
   public BitSet getRule () { return mRule; }
+  public String getRuleAsBinaryString () { return bitSetToBinaryString( mRule ); }
 
   public void setRadius ( int R )
   {
@@ -143,9 +161,19 @@ public class CA extends Loggable implements Comparable<CA>
   }
   public int getRadius () { return mRadius; }
   public int getDiameter () { return mDiameter; }
-  public int getRequiredBytesForRule() { return (mDiameter + 7)/8; }
+  public int getRequiredBytesForRule() { return (1 << mDiameter)/8; }
 
-  public byte [] numToBinaryBytes ( long i, int width ) 
+  public static String bitSetToBinaryString ( BitSet bs )
+  {
+    StringBuffer sb = new StringBuffer();
+    String fmt = "%8s";
+    for ( byte b : bs.toByteArray() )
+      sb.append( String.format( fmt, (Integer.toBinaryString( b&0xFF ))).replace(' ','0') );
+
+    return sb.toString();
+  }
+
+  public static byte [] numToBinaryBytes ( long i, int width ) 
   {
     String fmt = "%" + width + "s";
     return String.format(fmt, (Long.toBinaryString( i ))).replace(' ','0').getBytes( StandardCharsets.US_ASCII );
@@ -325,6 +353,57 @@ public class CA extends Loggable implements Comparable<CA>
     return b;
   }
 
+  public void run ()
+  {
+    try
+    {
+      backgroundWork.acquire();
+
+      iterate();
+
+      backgroundWork.release();
+    }
+    catch ( InterruptedException ie )
+    {
+      mDiary.warn( ie.getMessage() );
+    }
+  }
+
+  public void setSemaphore ( Semaphore bw )
+  {
+    backgroundWork = bw;
+  }
+
+  public void iterateBackground ( List<byte[]> ICs, int mw )
+  {
+    CA c = null;
+    backgroundWork = new Semaphore( mw, true );
+    List<Thread> threads = new ArrayList<Thread>();
+    Thread nT = null;
+
+    for ( byte [] ic : ICs )
+    {
+      c = (CA)this.clone();
+      c.setIC( ic );
+      c.setSemaphore( backgroundWork );
+
+      nT = new Thread( c );
+      nT.start();
+
+      threads.add( nT );
+    }
+
+    try
+    {
+      for ( Thread t : threads )
+        t.join();
+    }
+    catch ( InterruptedException ie )
+    {
+      mDiary.warn( ie.getMessage() );
+    }
+  }
+
   public Set sortedEntrySet ()
   {
     Map<Neighborhood, byte[]> tm = new TreeMap<Neighborhood, byte[]>(mRules);
@@ -349,4 +428,18 @@ public class CA extends Loggable implements Comparable<CA>
       return( this.fitness() - ca.fitness() );
     }
 
+  @Override
+    public Object clone ()
+    {
+      CA ca = new CA( this.mICWidth, this.mRadius );
+      ca.mRules = this.mRules;
+      ca.mRule = this.mRule;
+      ca.mICready = this.mICready;
+      ca.mCachedHood = this.mCachedHood;
+      ca.mStopIfStatic = this.mStopIfStatic;
+      ca.mIterations = this.mIterations;
+      ca.mCachedHood = new Neighborhood( mDiameter );
+
+      return ca;
+    }
 }

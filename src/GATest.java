@@ -66,6 +66,8 @@ public class GATest extends Loggable
       ga.mutate( a, sr, 10, true );
       c = a.getRule();
       assertTrue( c.equals(o) == false  );
+      if ( c.cardinality() != 10 )
+        mDiary.info( "wtf: " + c.cardinality() );
       assertTrue( c.cardinality() == 10  );
 
       o = (BitSet)a.getRule().clone();
