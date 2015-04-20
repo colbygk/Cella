@@ -33,6 +33,8 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
   protected static Diary mDiary = null;
 
 
+  public BitSet [] parents = new BitSet[0];
+
   public static final int MAX_WORKERS = 4;
   private int mMaxWorkers = MAX_WORKERS;
   private Semaphore backgroundWork = null;
@@ -78,6 +80,9 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
 
   private Neighborhood mCachedHood = null;
 
+  private CAHistory mCAHistory = null;
+  public CAHistory getHistory() { return mCAHistory; }
+
   PrintStream out = System.out;
 
   public CA ()
@@ -95,19 +100,21 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
     mIC = new byte[ mICWidth ];
     mMidIC = new byte[ mICWidth ];
 
+
     // Defaults to 100
     // Good enough for 2^5 rules or Radius 2 
     mRules = new HashMap<Neighborhood, byte[]>();
+    mCAHistory = new CAHistory();
 
   }
 
-  public CA ( int l, int r, boolean cloning )
+  public CA ( CA ca )
   {
     mDiary = getDiary();
-    mDiary.trace3( "Instantiating CA() length:" + l );
+    mDiary.trace3( "Instantiating CA() length:" + ca.getICWidth() );
 
-    mICWidth = l;
-    setRadius( r );
+    mICWidth = ca.getICWidth();
+    setRadius( ca.getRadius() );
     mIC = new byte[ mICWidth ];
     mMidIC = new byte[ mICWidth ];
   }
@@ -262,6 +269,7 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
         d++;
       }
 
+      // Equivalent to s_l = phi_l(eta)
       mMidIC[l] = mRules.get( mCachedHood )[0];
 
       if ( mMidIC[l] != mIC[l] )
@@ -319,6 +327,7 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
   public void setIC ( byte [] ic )
   {
     mIC = Arrays.copyOf( ic, ic.length );
+    mCAHistory.add_rho0( ic );
     mICready = true;
   }
   public byte [] getIC () { return mIC; }
@@ -404,6 +413,11 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
     }
   }
 
+  public float rho ()
+  {
+    return 0.0f;
+  }
+
   public Set sortedEntrySet ()
   {
     Map<Neighborhood, byte[]> tm = new TreeMap<Neighborhood, byte[]>(mRules);
@@ -431,7 +445,7 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
   @Override
     public Object clone ()
     {
-      CA ca = new CA( this.mICWidth, this.mRadius );
+      CA ca = new CA( this );
       ca.mRules = this.mRules;
       ca.mRule = this.mRule;
       ca.mICready = this.mICready;
@@ -439,6 +453,7 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
       ca.mStopIfStatic = this.mStopIfStatic;
       ca.mIterations = this.mIterations;
       ca.mCachedHood = new Neighborhood( mDiameter );
+      ca.mCAHistory = this.mCAHistory;
 
       return ca;
     }

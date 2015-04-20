@@ -7,6 +7,12 @@ import static org.junit.Assert.*;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
 public class CATest extends Loggable
 {
 
@@ -186,5 +192,36 @@ public class CATest extends Loggable
       assertTrue( ca1.getRule().cardinality() == 8 );
       assertTrue( ca2.getRule().cardinality() == 32 );
       assertTrue( ca3.getRule().cardinality() == 128 );
+    }
+
+  @Test
+    public void test_history ()
+    {
+      CA ca = new CA( 10, 1 );
+      ca.setRule( 201 );
+      ca.buildRulesMap();
+      ca.setStopIfStatic( true );
+
+      List<byte[]> ICs = new ArrayList<byte[]>();
+      ICs.add( CA.randomizedIC( 10 ) );
+      ICs.add( CA.randomizedIC( 10 ) );
+      ICs.add( CA.randomizedIC( 10 ) );
+      ICs.add( CA.randomizedIC( 10 ) );
+      ICs.add( CA.randomizedIC( 10 ) );
+
+      ca.iterateBackground( ICs, 4 );
+
+      for ( byte [] ic : ICs )
+      {
+        assertTrue( ca.getHistory().mRho.get( ic ) != null );
+        float [] rhos = ca.getHistory().mRho.get( ic );
+        assertTrue( rhos.length == 2 );
+        ca.getHistory().mRho.remove( ic );
+
+//        mDiary.info( "  k:" + (new String((byte[])p.getKey())) + " rho[0]:"
+//        + rho[0] + " rho[1]:" + rho[1] );
+      }
+
+      assertTrue( ca.getHistory().mRho.isEmpty() );
     }
 }
