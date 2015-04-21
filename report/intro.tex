@@ -1,6 +1,43 @@
 \section{Introduction}
 
-Introduction goes here.
+A cellular automaton (CA) is an \textit{N}-dimensional lattice, where each location in the lattice can be in one of \textit{k} possible states. 
+At each time step, the state of each location is synchronously updated according to a rule that maps a surrounding neighborhood to 
+a new state for that location. For example, in a 1-dimensional CA with two states and a neighborhood radius of two, a rule might contain the entry \texttt{11011} 
+$\rightarrow$ \texttt{1}, which says that a location in state \texttt{0} surrounded by two \texttt{1}s to the left and the right will change to state \texttt{1}. 
+`Running' a CA involves taking an initial lattice and iterating for some number of time steps; the `output' of the CA is the global state of the 
+lattice when the system halts.
 
-And we will cite Mitchell \cite{Mitchell:1994:ECA:186092.186116}
+Despite their simplicity, CAs are remarkably interesting. For example, CAs can be Turing-equivalent, as in the case of the Game of Life 
+\cite{berlekamp_winning_1982}, \cite{adamatzky_turing_2001}. Furthermore, CAs are good examples of complex systems, in the sense that 
+they are composed of simple homogenous components (lattice locations) interacting locally (as determined by the extent of the rule neighborhood) to affect  distributed information processing at the level of the entire system \cite{mitchell_complexity:_2009}. Consequently, studying the characteristics and 
+behavior of CAs may provide insights into the nature of complex systems in general. 
 
+One problem that has received considerable attention is the ``$\rho = \frac{1}{2}$'' problem \cite{Mitchell:1994:ECA:186092.186116}. In this problem, 
+the goal of a CA is to take an arbitrary initial lattice - an \textit{initial conditon} (IC) - and, after some number of iterations, correctly classify the 
+IC as having either more \texttt{1}s than \texttt{0}s or vice versa. In the former case, the CA should settle to a lattice of all 
+\texttt{1}s, but if the IC has a preponderance of \texttt{0}s, then the CA should settle to a lattice of all \texttt{0}s. $\rho_t$ is defined as the proportion of 
+\texttt{1}s in the lattice at time \textit{t}, so the problem can be stated as in (\ref{eq:rho_problem}), where \textit{IC} is an initial condition, and \textit{n} is the number of iterations.
+\begin{equation} \label{eq:rho_problem}
+  \rho_n(IC) =
+  \begin{cases}
+    0.0 & \text{if } \rho_0 < 0.5,
+    \\
+    1.0 & \text{if } \rho_0 > 0.5,
+   \\
+    \text{undefined} & \text{otherwise}.
+  \end{cases}
+\end{equation}
+The ``$\rho = \frac{1}{2}$'' problem is interesting precisely because a global feature of the IC - i.e., $\rho$ - must be correctly categorized through  
+local information processing. Furthermore, the space of possible solutions is not small: For \textit{k} states and a neighborhood of radius \textit{r} there are $k^{k^{2r+1}}$ possible rules. So, for the parameters we consider in this paper (\textit{k} = 2 and \textit{r} = \{2, 3\}), we are faced with the task of searching large sets of possible rules. 
+
+To cope with the size of the search space, we utilize a genetic algorithm (GA). In the GA, a relatively small number of possible solutions is randomly chosen from 
+the set of all rules, and their performance is assessed against a random set of ICs. A new set of rules is generated using mutation (i.e., rules are randomly modified) and crossover (i.e., parts from two rules are combined to form a new rule), where those rules that performed better on the ICs are more likely to be parents of the new rules. In this way, the GA randomly samples the space of possible solutions, and then refines the search to look more closely at those regions 
+that contain potential solutions.
+
+In this paper we consider the capacity of a GA to locate solutions to the ``$\rho = \frac{1}{2}$'' problem, as well as how successful those solutions are. In particular, the paper makes the following contributions: 
+\begin{enumerate}
+	\item Following \cite{Mitchell:1994:ECA:186092.186116}, we compare the results of a GA search for rules with $r = 2$ and $r = 3$ on binary ($k = 2$) 
+	ICs of length 121.
+	\item \textit{Mutational robustness} occurs when phenotypic traits are invariant with respect to changes in the underlying genome \cite{wagner_role_2012}.  
+	We investigate whether successful rules 
+\end{enumerate}
