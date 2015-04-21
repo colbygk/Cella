@@ -1,10 +1,71 @@
 \section{Results} \label{results}
 
-Results go here.
+For the results reported here, the CA population is 100, selection is tournament with elitism, offspring CA populations are created with both 
+mutation and crossover, the IC length is 121, the size of the IC test set is 100, and unless otherwise noted, CAs are run for a maximum of 
+200 iterations per IC over 50 generations. When rules are referred to using decimal notation, the encoding follows Mitchell 
+\cite{Mitchell:1994:ECA:186092.186116} (rather than Wolfram). See section \ref{sec:methods} 
+for full details.
 
 \subsection{Comparing neighborhoods} \label{sec:2_1}
+Our first goal was to compare rules with different neighborhoods. In particular, there is a tradeoff between the size of the search space and the 
+the amount of information available for purposes of setting a location state. Larger neighborhoods have rules that can 'see' more of the source IC, and 
+hence (intuitively) make a more informed decision about how to set the output bit, but this comes at a cost of increasing the size of the search space by multiple 
+orders of magnitude ($2^{32}$ vs. $2^{128}$).
 
-In this section we compare the results of the GA for CA with r = 2 and r = 3.
+Figure~\ref{fig:waterfall} shows two typical CA runs on the same IC. Rule XXXX (left) has such-and-such properties, while rule YYYY is an example of a rule that successfully categorizes the IC within 200 iterations.
+\begin{figure}
+\begin{center}
+\includegraphics[width=\linewidth]{foo.png}
+\caption{Waterfall plots of two typical CA runs on the same IC. The top row is the IC, and each successive row is the result of applying the CA rule 
+to the preceding row. The left hand figure depicts rule XXXX, which fails to converge within 200 iterations; the right hand figure depicts rule YYYY, 
+which correctly categorizes the density of \texttt{1}s in the IC by converging to all \texttt{1}s.}
+\label{fig:waterfall}
+\end{center}
+\end{figure}
+
+Figures~\ref{fig:r2_rho} and \ref{fig:r3_rho} plot the performance of an elite $r = 2$ and an elite $r = 3$ rule, respectively, as evolved after 50 generations. As can be seen, performance did not differ significantly; or maybe it did. We'll find out, and put a summary regarding which rule performs better here.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\linewidth]{foo.png}
+\caption{Performance of an elite, $r = 2$ rule as a function of $\rho$. Rule ZZZZ was tested against multiple ICs (when possible), and the precent correct is plotted on the \textit{y}-axis. As expected, the rule performs well when the proportion of \texttt{1}s is 
+low or high, but performance drops as $\rho$ approaches the difficult cases around $\frac{1}{2}$.}
+\label{fig:r2_rho}
+\end{center}
+\end{figure}
+\begin{figure} [h]
+\begin{center}
+\includegraphics[width=\linewidth]{foo.png}
+\caption{Performance of an elite, $r = 3$ rule as a function of $\rho$. As in the case of an elite $r = 2$ rule (fig.~\ref{fig:r2_rho}), the rule performs well when the proportion of \texttt{1}s is 
+low or high, but performance drops as $\rho$ approaches the difficult cases around $\frac{1}{2}$.}
+\label{fig:r3_rho}
+\end{center}
+\end{figure}
+
+It is also interesting to compare the performance of the most fit $r = 2$ and $r = 3$ rules over multiple generations. Figures~\ref{fig:r2_best_fit} and 
+\ref{fig:r3_best_fit} show the best fitness for the two neighborhoods as a function of generation. As can be seen in those figures, both trajectories exhibit 
+`epochs' as described by Mitchell \cite{Mitchell:1994:ECA:186092.186116}: Plateaus in best fitness are punctuated by moments where a new strategy 
+is discovered and becomes dominant in the population. However, as can also be seen from the figures, the $r = 2$ population discovers later epochs sooner 
+than the $r = 3$ population - or maybe they don't, or maybe it's the other way around.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\linewidth]{foo.png}
+\caption{Best fitness for $r = 2$ CA by generation. The trajectory exhibits epochs in the sense that plateaus in best fitness are punctuated by moments 
+where a new type of strategy is discovered, leading to a new plateau.}
+\label{fig:r2_best_fit}
+\end{center}
+\end{figure}
+\begin{figure} [h]
+\begin{center}
+\includegraphics[width=\linewidth]{foo.png}
+\caption{Best fitness for $r = 3$ CA by generation. As in the case of $r = 2$ (fig.~\ref{fig:r2_best_fit}), the trajectory exhibits epochs. In contrast to $r = 2$, 
+however, it takes longer or shorter or whatever if we see any differences.}
+\label{fig:r3_best_fit}
+\end{center}
+\end{figure}
+
+
 
 \subsection{Mutational robustness} \label{sec:2_2}
 
