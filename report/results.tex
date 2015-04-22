@@ -44,9 +44,8 @@ low or high, but performance drops as $\rho$ approaches the difficult cases arou
 
 It is also interesting to compare the performance of the most fit $r = 2$ and $r = 3$ rules over multiple generations. Figures~\ref{fig:r2_best_fit} and 
 \ref{fig:r3_best_fit} show the best fitness for the two neighborhoods as a function of generation. As can be seen in those figures, both trajectories exhibit 
-`epochs' as described by Mitchell \cite{Mitchell:1994:ECA:186092.186116}: Plateaus in best fitness are punctuated by moments where a new strategy 
-is discovered and becomes dominant in the population. However, as can also be seen from the figures, the $r = 2$ population discovers later epochs sooner 
-than the $r = 3$ population - or maybe they don't, or maybe it's the other way around.
+`epochs' as described by Mitchell \cite{Mitchell:1994:ECA:186092.186116}: There is an initial plateau interrupted by a jagged rise in best fitness, where 
+these increases represent the discovery of new, dominant strategies. However, as can also be seen from the figures, the $r = 2$ population discovers later epochs sooner than the $r = 3$ population - or maybe they don't, or maybe it's the other way around.
 
 \begin{figure}
 \begin{center}
@@ -65,7 +64,39 @@ however, it takes longer or shorter or whatever if we see any differences.}
 \end{center}
 \end{figure}
 
+As noted, the epochs depicted in figures~\ref{fig:r2_best_fit} and \ref{fig:r3_best_fit} correspond to different dominant strategies. As reported in 
+\cite{Mitchell:1994:ECA:186092.186116}, these strategies begin simple and become more nuanced over time. initially, since 50\% of each test set of ICs 
+has $\rho_0 > 0.5$ (see section~\ref{sec:methods}), a CA that goes to all \texttt{1}s or all \texttt{0}s will be right 50\% of the time, which is better than never converging in the first place. Consequently, early generations are dominated by rule that adopt this strategy. As the number of generations increases, 
+rules retain the initial strategy of always converging one way or the other, but begin to include `extreme' values of $\rho_0$ at the other end of the spectrum. 
+As the generations progress, the rules become more able to accommodate less extreme values of $\rho_0$.
 
+Let $\lambda$ be the proportion of \texttt{1}s in the binary representation of a rule (section~\ref{sec:methods}). Then the transitions just described are 
+equivalent to shifting from rules with $\lambda = 0$ or $\lambda = 1$ to rules with $\lambda \approx \frac{1}{2}$. This transition is depicted in 
+figure~\ref{fig:histogram}.
+
+\begin{figure} [p!]
+\begin{center}
+\includegraphics[width=7in]{foo.png}
+\caption{Frequency of different rules (as represented by $\lambda$) by generation. Over 50 runs of the GA, $\lambda$ values were collected at every 
+fifth generation. Early generations are dominated by $\lambda \approx 1.0$ and $\lambda \approx 0.0$ indicating that most rules converged on all 
+\texttt{0}s or all \texttt{1}s, regardless of $rho_0$. By generation XXXXXX, .... yadda yadda yadda. THIS FIGURE IS GOING TO BE FULL PAGE}
+\label{fig:histogram}
+\end{center}
+\end{figure}
+
+Finally, note that each application of a rule results in a \textit{transient} period in which a location state may continue to flip before finally settling to a 
+stable state (if at all; see figure~\ref{fig:waterfall}). One way to quantify this period is simply to count the number of times a given location changes state 
+over the 200 iterations of a rule given an initial condition. In order to visualize the relation between the length of a transient period and the fitness of a rule, 
+we recorded the average length of the transients for each rule on each IC in the test set after each generation, and plotted this value against the fitness 
+for that rule (figure~\ref{fig:transients}).
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\linewidth]{foo.png}
+\caption{Average length of transients for each rule plotted against the fitness of that rule.}
+\label{fig:r2_best_fit}
+\end{center}
+\end{figure}
 
 \subsection{Mutational robustness} \label{sec:2_2}
 
