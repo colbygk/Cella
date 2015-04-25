@@ -74,19 +74,18 @@ Let $\lambda$ be the proportion of \texttt{1}s in the binary representation of a
 equivalent to shifting from rules with $\lambda = 0$ or $\lambda = 1$ to rules with $\lambda \approx \frac{1}{2}$. This transition is depicted in 
 figure~\ref{fig:histogram}.
 
-\begin{figure} [p!]
+\begin{figure}
 \begin{center}
-\includegraphics[width=7in]{foo.png}
+\includegraphics[width=\linewidth]{foo.png}
 \caption{Frequency of different rules (as represented by $\lambda$) by generation. Over 50 runs of the GA, $\lambda$ values were collected at every 
 fifth generation. Early generations are dominated by $\lambda \approx 1.0$ and $\lambda \approx 0.0$ indicating that most rules converged on all 
-\texttt{0}s or all \texttt{1}s, regardless of $rho_0$. By generation XXXXXX, .... yadda yadda yadda. THIS FIGURE IS GOING TO BE FULL PAGE}
+\texttt{0}s or all \texttt{1}s, regardless of $rho_0$. By generation XXXXXX, .... yadda yadda yadda.}
 \label{fig:histogram}
 \end{center}
 \end{figure}
 
-Finally, note that each application of a rule results in a \textit{transient} period in which a location state may continue to flip before finally settling to a 
-stable state (if at all; see figure~\ref{fig:waterfall}). One way to quantify this period is simply to count the number of times a given location changes state 
-over the 200 iterations of a rule given an initial condition. In order to visualize the relation between the length of a transient period and the fitness of a rule, 
+Finally, note that each location in the lattice has a transient period in which its state may continue to flip before finally stabilizing (if at all; see figure~\ref{fig:waterfall}). One way to quantify this period is to count the number of times a given location changes state 
+over the 200 iterations of a rule, given an initial condition. In order to visualize the relation between the length of a transient period and the fitness of a rule, 
 we recorded the average length of the transients for each rule on each IC in the test set after each generation, and plotted this value against the fitness 
 for that rule (figure~\ref{fig:transients}).
 
@@ -94,17 +93,51 @@ for that rule (figure~\ref{fig:transients}).
 \begin{center}
 \includegraphics[width=\linewidth]{foo.png}
 \caption{Average length of transients for each rule plotted against the fitness of that rule.}
-\label{fig:r2_best_fit}
+\label{fig:transients}
 \end{center}
 \end{figure}
 
 \subsection{Mutational robustness} \label{sec:2_2}
 
-In this section we consider whether our CAs exhibit mutational robustness as described in \cite{wagner_role_2012}.
+Mutational robustness occurs when changes in the genotype are phenotypically neutral: The genomic modification results in no significant change 
+in the traits expressed, and hence no difference in fitness \cite{wagner_role_2012}. When a phenotype is robust in this way, it may be possible for the 
+genome to move to a very different region of search space by accruing changes over multiple generations, increasing the breadth of the search for 
+successful solutions without having to cross low-fitness boundaries.
+
+If our CAs are mutationally robust, then the nearby neighbors of elite rules should themselves perform well. To assess whether 
+this is the case, we selected XXXX elite rules from both the $r = 2$ and $r = 3$ runs, and randomly mutated each \textit{x} times, for $x = 1,2,3, ... 7$. 
+For each \textit{x}, we tested the resulting rules against a set of ICs and recorded the fitness. The results are given in figure~\ref{fig:robustness}.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\linewidth]{foo.png}
+\caption{Testing for the mutational robustness of elite rules. XXXX elite rules from $r = 2$ and $r = 3$ GA runs were chosen and randomly mutated 1, 2, ... 7 
+times. After each mutation, the resulting rules were tested against the same set of ICs, and the fitness recorded. As can be seen in the figure, 
+rules are robust for approximately YYYY mutations, at which point fitness declines.}
+\label{fig:robustness}
+\end{center}
+\end{figure}
 
 \subsection{In search of a better CA} \label{sec:2_3}
 
-In this section we try to extend the results.
+As noted above (figure~\ref{fig:histogram}), some of the earliest successful strategies to emerge are those that (i) go to all \texttt{1}s or all \texttt{0}s by default, 
+yet (ii) change their behavior for values of $\rho$ at the opposite extreme. For example, a rule may for the most part map every 
+neighborhood to \texttt{0}, except for neighborhoods with many \texttt{1}s, so an IC with a high enough value of $\rho$ will 
+`overwhelm' the default behavior of the rule. In such a rule, very IC with $\rho < 0.5$ is successfully classified, as are ICs with $\rho \approx 1.0$, but 
+errors are made on those with $\rho \gtrapprox 0.5$.
 
+Of course, the region around $\rho = 0.5$ is precisely the region we want to encourage the rules to deal with, yet under the fitness testing regime 
+used for the experiments reported above, the `easy' cases (where $\rho \approx 1.0$ or $\rho \approx 0.0$) appear in testing sets  
+with the same probability as any other IC for the entire GA run. As a result, CAs are still being rewarded for dealing with these easy cases long after their 
+utility is exhausted.
+
+To address this issue, we modified the GA so that the fitness gain for successfully classifying ICs is a function of its distance from $\rho = 0.5$: The 
+closer to 0.5, the more a correct classification is worth. Furthermore, this function is adjusted depending on the current generation, so that at generation 1 
+all ICs are worth the same amount of fitness regardless of their distance from $\rho = 0.5$, and the distance becomes increasingly more important as 
+the generations progress.
+
+To address this issue, we modified the GA so that IC sets are initially randomly constructed using a uniform distribution, but 
+the distribution becomes increasingly normal, with mean of $\rho = 0.5$. This means that as the GA progresses, it becomes less likely that a 
+set of ICs will include the easier cases, and more likely that harder cases will be included. 
 
 
