@@ -13,6 +13,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class CATest extends Loggable
 {
 
@@ -209,7 +212,8 @@ public class CATest extends Loggable
       ICs.add( CA.randomizedIC( 10 ) );
       ICs.add( CA.randomizedIC( 10 ) );
 
-      ca.iterateBackground( ICs, 4 );
+      ExecutorService es = Executors.newFixedThreadPool( 4 );
+      ca.iterateBackground( ICs, es );
 
       for ( byte [] ic : ICs )
       {

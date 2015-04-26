@@ -22,13 +22,33 @@ public class GATest extends Loggable
       GA ga = new GA();
       CA a = new CA( 20, 2 );
       CA b = new CA( 20, 2 );
+      CA c = null;
+      BitSet as, bs, cs;
+      int i = 10, k = 0;
 
-      a.randomizedRule();
-      b.randomizedRule();
+      while ( i-- > 0 )
+      {
 
-      //CA c = ga.crossOver( a, b );
+        a.randomizedRule();
+        b.randomizedRule();
 
-     // assertTrue( c.getDiameter() == a.getDiameter() );
+        c = ga.crossOver( a, b );
+
+        assertTrue( c.getDiameter() == a.getDiameter() );
+
+        as = a.getRule();
+        bs = b.getRule();
+        cs = c.getRule();
+
+        for ( k = 0; k < c.getCrossPoint(); k++ )
+          assertTrue( cs.get( k ) == as.get( k ) );
+
+        for ( ; k < c.getRuleWidthInBits(); k++ )
+          assertTrue( cs.get( k ) == bs.get( k ) );
+
+
+      } // while i-- 
+
     }
 
   @Test(expected=RuntimeException.class)
@@ -97,4 +117,5 @@ public class GATest extends Loggable
       assertTrue( ga.getIterations() == GA.DEFAULT_ITERATIONS );
       assertTrue( ga.getGenerations() == GA.DEFAULT_GENERATIONS );
     }
+
 }

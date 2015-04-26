@@ -18,8 +18,10 @@ import java.util.Random;
 import java.util.BitSet;
 import java.util.Arrays;
 
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.BrokenBarrierException;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 import java.math.BigInteger;
@@ -54,7 +56,6 @@ public class GA extends Loggable
   public List<CA> getRules() { return mRules; }
 
   private SecureRandom mSR = null;
-  private CyclicBarrier mBarrier = null;
 
   PrintStream out = System.out;
 
@@ -83,12 +84,37 @@ public class GA extends Loggable
     for ( int k = 0; k < mPop; k++ )
       mRules.add( initCA( mSR )  );
 
-    byte[] bs = null;
-    for ( int k = 0; k < mICCount; k++ )
-      mInitialConditions.add( CA.randomizedIC( mICWidth ) );
-
+    randomizeICList();
   }
 
+  public void randomizeICList ()
+  {
+    mInitialConditions.clear();
+
+    // This creates an even number of rules
+    // with a rho_0 >= .5 and rho_0 < 0.5
+    boolean upper_rho = true;
+    byte [] aic = null;
+    float rho = 0.0f;
+    int k = 0;
+    while ( k < mICCount )
+    {
+      aic = CA.randomizedIC( mICWidth );
+      rho = CAHistory.compute_rho( aic );
+      if ( upper_rho && rho >= 0.5 )
+      {
+        mInitialConditions.add( aic );
+        upper_rho = false;
+        k++;
+      }
+      else if ( ! upper_rho && rho < 0.5 )
+      {
+        mInitialConditions.add( aic );
+        upper_rho = true;
+        k++;
+      }
+    }
+  }
 
   public static int getDefaultPop () { return DEFAULT_POP; }
   public static int getDefaultICCount () { return DEFAULT_ICCOUNT; }
@@ -101,24 +127,25 @@ public class GA extends Loggable
 
   public CA crossOver ( CA a, CA b )
   {
-    if ( a.getRuleWidthInBits() != b.getRuleWidthInBits() )
+    int rwa = a.getRuleWidthInBits();
+
+    if ( rwa != b.getRuleWidthInBits() )
     {
       throw new RuntimeException( "Whoa there, this implementation cannot do cross over with" +
           " mismatched rule bit widths (different radii): " +
           "a:" + a + " b:" + b );
     }
 
-    int rw = a.getRuleWidthInBits();
-    int crossPoint = mSR.nextInt( rw );
-    BitSet ar = a.getRule();
+    int crossPoint = mSR.nextInt( rwa );
     BitSet br = b.getRule();
-    BitSet newR = (BitSet)ar.clone();
+    BitSet newR = (BitSet)a.getRule().clone();
 
-    for ( int k = crossPoint; k < rw; k++ )
+    for ( int k = crossPoint; k < rwa; k++ )
       if ( newR.get(k) != br.get(k) )
         newR.flip(k);
 
-    CA ca = new CA( a.getICWidth(), a.getRuleWidthInBits() );
+    CA ca = new CA( a.getICWidth(), a.getRadius() );
+    ca.setCrossPoint( crossPoint );
     ca.setRule( newR );
     ca.setIterations( mIterations );
     ca.buildRulesMap();
@@ -202,8 +229,10 @@ public class GA extends Loggable
     // Filler to get an idea of how long this will take to run
     // for a real simulation
     
+    ExecutorService es = Executors.newFixedThreadPool( nWorkers );
+
     long start = System.nanoTime();
-    int relit = 0;
+    int fitness = 0;
 
     for ( int gn = 0; gn < mGenerations; gn++ )
     {
@@ -211,7 +240,7 @@ public class GA extends Loggable
       for ( CA ca : mRules )
       {
         System.out.print(".");
-        ca.iterateBackground( mInitialConditions, nWorkers );
+        fitness = ca.iterateBackground( mInitialConditions, es );
         /*
         for ( byte [] ic : mInitialConditions )
         {
@@ -221,7 +250,7 @@ public class GA extends Loggable
         */
       }
 
-      System.out.print("xover.mutate.");
+      System.out.print( fitness + ".xover.mutate.");
       for ( CA ca : mRules )
       {
         crossOver( ca, ca );
@@ -233,7 +262,6 @@ public class GA extends Loggable
     }
     long end = System.nanoTime();
     int ni = mGenerations * mRules.size() * mInitialConditions.size() * mIterations;
-    ni = relit;
 
     out.println( String.format( " %07d iters %10.0f iter/sec (%3.2f s)",
           ni, (ni/((end-start)/1e9)), (end-start)/1e9, ni) );

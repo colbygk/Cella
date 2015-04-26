@@ -24,7 +24,7 @@ class CAHistory extends Loggable
     lambda = (float)((float)mRule.cardinality() / (float)bits);
   }
 
-  public float compute_rho ( byte [] ic )
+  public static float compute_rho ( byte [] ic )
   {
     int k = 0;
 
@@ -42,10 +42,15 @@ class CAHistory extends Loggable
     mRho.put( ic, rhos );
   }
 
-  public synchronized void add_result ( byte [] ic0, byte [] icn )
+
+
+  public synchronized void add_result ( CA ca )
   {
-    float [] rhos = mRho.get( ic0 );
-    rhos[1] = compute_rho( icn );
+    float [] rhos = new float[2];
+    rhos[0] = ca.get_rho0();
+    rhos[1] = ca.get_rho();
+
+    mRho.put( ca.getIC0(), rhos );
 
     if ( rhos[0] > 0.5 && rhos[1] == 1.0 )
       fitness++;
