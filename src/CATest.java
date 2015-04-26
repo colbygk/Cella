@@ -7,6 +7,7 @@ import static org.junit.Assert.*;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -228,4 +229,33 @@ public class CATest extends Loggable
 
       assertTrue( ca.getHistory().mRho.isEmpty() );
     }
+
+  @Test
+    public void test_ca_sorting ()
+    {
+
+      CA c1 = new CA( 10, 1 );
+      CA c2 = new CA( 10, 1 );
+      CA c3 = new CA( 10, 1 );
+      CA c4 = new CA( 10, 1 );
+
+      c1.getHistory().fitness = 30;
+      c2.getHistory().fitness = 5;
+      c3.getHistory().fitness = 10;
+      c4.getHistory().fitness = 80;
+
+      List<CA> al = new ArrayList<CA>();
+      al.add( c1 );
+      al.add( c2 );
+      al.add( c3 );
+      al.add( c4 );
+
+      Collections.sort( al );
+
+      assertTrue( al.get(0) == c4 );
+      assertTrue( al.get(1) == c1 );
+      assertTrue( al.get(2) == c3 );
+      assertTrue( al.get(3) == c2 );
+    }
+
 }

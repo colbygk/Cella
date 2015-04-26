@@ -38,7 +38,13 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
   protected static Diary mDiary = null;
 
 
-  public BitSet [] parents = new BitSet[0];
+  public BitSet [] mParents = null;
+  public void setParents( BitSet a, BitSet b )
+  {
+    mParents = new BitSet[2];
+    mParents[0] = a;
+    mParents[1] = b;
+  }
 
   public static final int MAX_WORKERS = 4;
   private int mMaxWorkers = MAX_WORKERS;
@@ -54,6 +60,12 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
   private int mRuleWidthBits = DEFAULT_RULEWIDTH;
   public int getICWidth() { return mICWidth; }
   public int getRuleWidthInBits() { return mRuleWidthBits; }
+
+  private float mLowerBound = 0.0f;
+  private float mUpperBound = 1.0f;
+
+  private int mNumIterations = 0;
+  public int numActualIterations() { return mNumIterations; }  
 
   private int mRadius = 0;
   private int mDiameter = 0;
@@ -86,8 +98,6 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
   public void setIterations ( int i ) { mIterations = i; }
   public int getIterations () { return mIterations; }
 
-  private int mFitness = 0;
-
   private Neighborhood mCachedHood = null;
 
   private CAHistory mCAHistory = null;
@@ -113,6 +123,8 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
     mDiary.trace3( "Instantiating CA() length:" + l );
 
     mICWidth = l;
+    mLowerBound = (float)1.0f/(float)l;
+    mUpperBound = (float)(l-1.0f)/(float)l;
     setRadius( r );
     mIC = new byte[ mICWidth ];
     mMidIC = new byte[ mICWidth ];
@@ -121,7 +133,7 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
     // Defaults to 100
     // Good enough for 2^5 rules or Radius 2 
     mRules = new HashMap<Neighborhood, byte[]>();
-    mCAHistory = new CAHistory();
+    mCAHistory = new CAHistory( mLowerBound, mUpperBound );
 
   }
 
@@ -386,7 +398,7 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
 
   public CA call ()
   {
-    iterate();
+    mNumIterations = iterate();
 
     return ( this );
   }
@@ -429,10 +441,14 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
     return tm.entrySet();
   }
 
-  // NB: fitness always returns 0 at the moment
-  public int fitness()
+  public void resetFitness ()
   {
-    return mFitness;
+    mCAHistory.fitness = 0;
+  }
+
+  public int fitness ()
+  {
+    return mCAHistory.fitness;
   }
 
   @Override
@@ -441,10 +457,11 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
       return ((CA)ca).fitness() == this.fitness();
     }
 
+  // Creates a sort that is high->low
   @Override
     public int compareTo( CA ca )
     {
-      return( this.fitness() - ca.fitness() );
+      return( ca.fitness() - this.fitness() );
     }
 
   @Override
@@ -458,7 +475,7 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
       ca.mStopIfStatic = this.mStopIfStatic;
       ca.mIterations = this.mIterations;
       ca.mCachedHood = new Neighborhood( mDiameter );
-      ca.mCAHistory = new CAHistory();
+      ca.mCAHistory = new CAHistory( this.mLowerBound, this.mUpperBound );
 
       return ca;
     }

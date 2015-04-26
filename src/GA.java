@@ -53,6 +53,8 @@ public class GA extends Loggable
   private List<byte[]> mInitialConditions = null;
   public List<byte[]> getICs() { return mInitialConditions; }
   private List<CA> mRules = null;
+  private List<CA> mOldRules = null;
+  private List<CA> mMidRules = null;
   public List<CA> getRules() { return mRules; }
 
   private SecureRandom mSR = null;
@@ -78,6 +80,7 @@ public class GA extends Loggable
     mGenerations = g;
 
     mRules = new ArrayList<CA>();
+    mOldRules = new ArrayList<CA>();
     mInitialConditions = new ArrayList<byte[]>();
 
     mSR = new SecureRandom();
@@ -235,14 +238,17 @@ public class GA extends Loggable
 
     long start = System.nanoTime();
     int fitness = 0;
+    int possibleNi = mGenerations * mRules.size() * mInitialConditions.size() * mIterations;
+    int ni = 0;
 
     for ( int gn = 0; gn < mGenerations; gn++ )
     {
       System.out.print( " generation "+gn );
       for ( CA ca : mRules )
       {
-        System.out.print(".");
         fitness = ca.iterateBackground( mInitialConditions, es );
+        System.out.print("."+fitness);
+        ni += ca.numActualIterations();
         /*
         for ( byte [] ic : mInitialConditions )
         {
@@ -252,18 +258,37 @@ public class GA extends Loggable
         */
       }
 
-      System.out.print( fitness + ".xover.mutate.");
-      for ( CA ca : mRules )
+      Collections.sort( mRules );
+
+      mMidRules = mOldRules;
+      mOldRules = mRules;
+      mRules = mMidRules;
+
+      mRules.clear();
+
+      // Take the top ten rules 
+      for ( int k = 0; k < 10; k++ )
       {
-        crossOver( ca, ca );
-        mutate( ca, mSR, 1, false );
+        CA ca = mOldRules.get( k );
+        ca.resetFitness();
+        mRules.add( ca );
       }
 
-      System.out.println("done");
+      for ( int k = 10; k < mOldRules.size(); k++ )
+      {
+        CA newCA = crossOver( mOldRules.get(mSR.nextInt( mOldRules.size() )),
+            mOldRules.get(mSR.nextInt( mOldRules.size() )) );
+        mRules.add( k, newCA );
+      }
+
+      System.out.print( fitness + ".xover.mutate.");
+      for ( CA ca : mRules )
+        mutate( ca, mSR, 1, false );
+
+      System.out.println("done " + mRules.size());
 
     }
     long end = System.nanoTime();
-    int ni = mGenerations * mRules.size() * mInitialConditions.size() * mIterations;
 
     out.println( String.format( " %07d iters %10.0f iter/sec (%3.2f s)",
           ni, (ni/((end-start)/1e9)), (end-start)/1e9, ni) );

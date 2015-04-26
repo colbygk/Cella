@@ -12,10 +12,15 @@ class CAHistory extends Loggable
   public float lambda = 0.0f;
   private BitSet mRule = null;
   public int fitness = 0;
+  public float mLowerBound = 0.0f;
+  public float mUpperBound = 1.0f;
 
-  public CAHistory ()
+  public CAHistory ( float l, float u )
   {
     mDiary = getDiary();
+
+    mLowerBound = l;
+    mUpperBound = u;
   }
 
   public void setRule ( int bits, BitSet r )
@@ -52,10 +57,13 @@ class CAHistory extends Loggable
 
     mRho.put( ca.getIC0(), rhos );
 
-    if ( rhos[0] > 0.5 && rhos[1] == 1.0 )
+    if ( rhos[0] > 0.5 && rhos[1] < mLowerBound )
       fitness++;
-    else if ( rhos[0] <= 0.5 && rhos[1] == 0.0 )
+    else if ( rhos[0] <= 0.5 && rhos[1] > mUpperBound )
       fitness++;
+
+    // mDiary.info( " r0: " + rhos[0] + " r: " + rhos[1] + " f: " + fitness +
+      //   " l: " + mLowerBound + " u: " + mUpperBound);
   }
 }
 
