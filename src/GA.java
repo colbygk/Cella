@@ -137,8 +137,9 @@ public class GA extends Loggable
     }
 
     int crossPoint = mSR.nextInt( rwa );
+    BitSet ar = a.getRule();
     BitSet br = b.getRule();
-    BitSet newR = (BitSet)a.getRule().clone();
+    BitSet newR = (BitSet)ar.clone();
 
     for ( int k = crossPoint; k < rwa; k++ )
       if ( newR.get(k) != br.get(k) )
@@ -149,6 +150,7 @@ public class GA extends Loggable
     ca.setRule( newR );
     ca.setIterations( mIterations );
     ca.buildRulesMap();
+    ca.setParents( ar, br );
     ca.setStopIfStatic( true );
 
     return ca;
@@ -180,7 +182,7 @@ public class GA extends Loggable
         {
           k++;
           gene.flip( b );
-          mutamap.put( b, true );
+          mutamap.put( i, true );
         }
       }
     }
@@ -266,6 +268,8 @@ public class GA extends Loggable
     out.println( String.format( " %07d iters %10.0f iter/sec (%3.2f s)",
           ni, (ni/((end-start)/1e9)), (end-start)/1e9, ni) );
     out.println( String.format( " total time: %3.2f", (end-start)/1e9 ) );
+
+    es.shutdown();
 
   }
 }
