@@ -14,6 +14,7 @@ class CAHistory extends Loggable
   public int fitness = 0;
   public float mLowerBound = 0.0f;
   public float mUpperBound = 1.0f;
+  public int totalIterations = 0;
 
   public CAHistory ( float l, float u )
   {
@@ -62,8 +63,11 @@ class CAHistory extends Loggable
     else if ( rhos[0] <= 0.5 && rhos[1] < mLowerBound )
       fitness++;
 
+    totalIterations += ca.numActualIterations();
+
     // mDiary.info( " r0: " + rhos[0] + " r: " + rhos[1] + " f: " + fitness +
       //   " l: " + mLowerBound + " u: " + mUpperBound);
+      //
   }
 }
 

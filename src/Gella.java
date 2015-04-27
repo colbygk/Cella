@@ -274,6 +274,8 @@ public class Gella extends Loggable
     catch ( Exception ex )
     {
       err.println( "Unexpected Exception: " + ex.getMessage() );
+      err.println( "Type: " + ex );
+      ex.printStackTrace();
     }
   }
 }

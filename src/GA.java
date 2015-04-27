@@ -142,7 +142,10 @@ public class GA extends Loggable
   public int getRuleWidthInBits () { return mRuleWidth; }
   private BufferedWriter mCALogFile = null;
   private BufferedWriter mCALogElitesFile = null;
-  public String mCALogFileName = "lambdas.log";
+  private BufferedWriter mICLogFile = null;
+  private BufferedWriter mFitLogFile = null;
+  private BufferedWriter mEliteRulesLogFile = null;
+  public String mCALogFileName = null;
   public boolean mCALog = false;
   public void setCALogFileName ( String n )
   {
@@ -150,6 +153,137 @@ public class GA extends Loggable
     mCALogFileName = n;
   }
 
+
+  public void closeLogs ()
+  {
+    String wrkin = null;
+    try
+    {
+      if ( mFitLogFile != null )
+      {
+        wrkin = "fitness";
+        mFitLogFile.flush();
+        mFitLogFile.close();
+      }
+      if ( mICLogFile != null )
+      {
+        wrkin = "ic";
+        mICLogFile.flush();
+        mICLogFile.close();
+      }
+      if ( mCALogFile != null )
+      {
+        wrkin = "lambdas";
+        mCALogFile.flush();
+        mCALogFile.close();
+      }
+      if ( mCALogElitesFile != null )
+      {
+        wrkin = "elite lambdas";
+        mCALogElitesFile.flush();
+        mCALogElitesFile.close();
+      }
+      if ( mEliteRulesLogFile != null )
+      {
+        wrkin = "elite rules";
+        mEliteRulesLogFile.flush();
+        mEliteRulesLogFile.close();
+      }
+    }
+    catch ( IOException ioe )
+    {
+      mDiary.warn( "Log file problem: " + wrkin + ": " + ioe.getMessage() );
+    }
+  }
+
+  public void logEliteRules ()
+  {
+    if ( mCALog )
+    {
+      try
+      {
+        if ( mEliteRulesLogFile == null )
+        {
+          mEliteRulesLogFile = new BufferedWriter(
+              new FileWriter( "elite.rules." + mCALogFileName, false ) );
+        }
+
+        StringBuffer sb = new StringBuffer();
+        CA ca = null;
+        for ( int k = 0; k < GA.ELITE_NUM; k++ )
+        {
+          ca = mRules.get( k );
+          sb.append( ca.ruleToString() ).append("\n");
+        }
+
+        mEliteRulesLogFile.write( sb.toString() );
+      }
+      catch ( IOException ioe )
+      {
+        mDiary.warn( "Unable to log elite rules: " + ioe.getMessage() );
+      }
+    }
+  }
+
+  public void logFitPop ()
+  {
+    if ( mCALog )
+    {
+      try
+      {
+        if ( mFitLogFile == null )
+        {
+          mFitLogFile = new BufferedWriter(
+              new FileWriter( "fitness." + mCALogFileName, false ) );
+        }
+
+        StringBuffer sb = new StringBuffer();
+        CA ca = null;
+        for ( int k = 0; k < mRules.size(); k++ )
+        {
+          ca = mRules.get( k );
+          sb.append( ca.fitness() ).append(" ");
+        }
+        sb.append("\n");
+
+        mFitLogFile.write( sb.toString() );
+      }
+      catch ( IOException ioe )
+      {
+        mDiary.warn( "Unable to log Fit pop: " + ioe.getMessage() );
+      }
+    }
+  }
+
+  public void logICPop ()
+  {
+    if ( mCALog )
+    {
+      try
+      {
+        if ( mICLogFile == null )
+        {
+          mICLogFile = new BufferedWriter(
+              new FileWriter( "elite.lambda." + mCALogFileName, false ) );
+        }
+
+        StringBuffer sb = new StringBuffer();
+        byte[] ic = null;
+        for ( int k = 0; k < mInitialConditions.size(); k++ )
+        {
+          ic = mInitialConditions.get( k );
+          sb.append( CAHistory.compute_rho( ic ) ).append(" ");
+        }
+        sb.append("\n");
+
+        mICLogFile.write( sb.toString() );
+      }
+      catch ( IOException ioe )
+      {
+        mDiary.warn( "Unable to log IC pop: " + ioe.getMessage() );
+      }
+    }
+  }
 
   public void logCAElitesPop ()
   {
@@ -160,7 +294,7 @@ public class GA extends Loggable
         if ( mCALogElitesFile == null )
         {
           mCALogElitesFile = new BufferedWriter(
-              new FileWriter( "elites." + mCALogFileName, false ) );
+              new FileWriter( "elite.lambda." + mCALogFileName, false ) );
         }
 
         StringBuffer sb = new StringBuffer();
@@ -174,11 +308,10 @@ public class GA extends Loggable
         sb.append("\n");
 
         mCALogElitesFile.write( sb.toString() );
-        mCALogElitesFile.flush();
       }
       catch ( IOException ioe )
       {
-        mDiary.warn( "Unable to log CA population lambdas: " + ioe.getMessage() );
+        mDiary.warn( "Unable to log CA elite population lambdas: " + ioe.getMessage() );
       }
     }
   }
@@ -191,7 +324,8 @@ public class GA extends Loggable
       {
         if ( mCALogFile == null )
         {
-          mCALogFile = new BufferedWriter( new FileWriter( mCALogFileName, false ) );
+          mCALogFile = new BufferedWriter(
+              new FileWriter( "all.lambda." + mCALogFileName, false ) );
         }
 
         StringBuffer sb = new StringBuffer();
@@ -205,7 +339,6 @@ public class GA extends Loggable
         sb.append("\n");
 
         mCALogFile.write( sb.toString() );
-        mCALogFile.flush();
       }
       catch ( IOException ioe )
       {
@@ -328,14 +461,15 @@ public class GA extends Loggable
     {
       logCAPop();
       logCAElitesPop();
-      // logICPop();
+      logICPop();
       //
       System.out.print( " generation "+gn );
       for ( CA ca : mRules )
       {
         fitness = ca.iterateBackground( mInitialConditions, es );
         System.out.print("."+fitness);
-        ni += ca.numActualIterations();
+        ni += ca.getHistory().totalIterations;
+        ca.getHistory().totalIterations = 0;
 
         /*
            if ( fitness >= 50 )
@@ -348,6 +482,8 @@ public class GA extends Loggable
       }
 
       Collections.sort( mRules );
+
+      logFitPop();
 
       mMidRules = mOldRules;
       mOldRules = mRules;
@@ -362,7 +498,10 @@ public class GA extends Loggable
         mRules.add( ca );
       }
 
+      System.out.print( ".xover.mutate.");
+
       CA w, x, y, z;
+      CA ca1, ca2, ca3;
       for ( int k = GA.ELITE_NUM; k < mOldRules.size(); k++ )
       {
         w = mOldRules.get( mSR.nextInt( mOldRules.size() ) );
@@ -370,30 +509,35 @@ public class GA extends Loggable
         y = mOldRules.get( mSR.nextInt( mOldRules.size() ) );
         z = mOldRules.get( mSR.nextInt( mOldRules.size() ) );
 
-        CA ca1 = ( w.fitness() > x.fitness() ? w : x );
-        CA ca2 = ( y.fitness() > z.fitness() ? y : z );
+        ca1 = ( w.fitness() > x.fitness() ? w : x );
+        ca2 = ( y.fitness() > z.fitness() ? y : z );
+        ca3 = crossOver( ca1, ca2 );
+        mutate( ca3, mSR, (int)(ca3.getRuleWidthInBits()*mSR.nextDouble()*0.10), false );
 
-        mRules.add( crossOver( ca1, ca2 ) );
+        mRules.add( ca3 );
       }
 
       for ( CA ca : mRules )
         ca.resetFitness();
 
-      System.out.print( fitness + ".xover.mutate.");
+
+      /*
       for ( CA ca : mRules )
       {
         mutate( ca, mSR, (int)(ca.getRuleWidthInBits()*0.10), false );
         //mutate( ca, mSR, 121, false );
       }
+      */
 
       System.out.println("done " + mRules.size());
 
       randomizeICList();
-
-
     } // Generations loop
 
     long end = System.nanoTime();
+
+    logEliteRules();
+    closeLogs();
 
     out.println( String.format( " %07d iters %10.0f iter/sec (%3.2f s)",
           ni, (ni/((end-start)/1e9)), (end-start)/1e9, ni) );

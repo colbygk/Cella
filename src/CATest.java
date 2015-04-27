@@ -23,6 +23,70 @@ public class CATest extends Loggable
   public static Diary mDiary = getStaticDiary();
 
   @Test
+    public void test_lambda ()
+    {
+      CA ca = new CA( 20, 2 );
+      SecureRandom sr = new SecureRandom();
+      int k = 1000;
+
+      while ( k-- > 0 )
+      {
+        ca.setRadius( sr.nextInt( 5 ) );
+        ca.randomizedRule();
+        assertTrue( ca.getLambda() <= 1.0 && ca.getLambda() >= 0.0 );
+      }
+      
+    }
+
+  @Test
+    public void test_rho ()
+    {
+      CA ca = new CA( 20, 2 );
+      SecureRandom sr = new SecureRandom();
+      int k = 1000;
+
+      while ( k-- > 0 )
+      {
+        ca = new CA( sr.nextInt( 300 )+1, sr.nextInt( 4 ) );
+        ca.randomizedIC();
+        assertTrue( ca.get_rho0() <= 1.0 && ca.get_rho0() >= 0.0 );
+      }
+    }
+
+  @Test
+    public void test_lambda_after_crossmut ()
+    {
+      CA ca1 = null;
+      CA ca2 = null;
+      CA ca3 = null;
+      GA ga = new GA();
+      SecureRandom sr = new SecureRandom();
+      int k, w, b;
+
+      for ( int j = 0; j < 5; j++ )
+      {
+        w = sr.nextInt( 300 ) + 20;
+        b = sr.nextInt( 5 );
+        ca1 = new CA( w, b );
+        ca1.randomizedIC();
+        ca1.randomizedRule();
+        ca2 = new CA( w, b );
+        ca2.randomizedIC();
+        ca2.randomizedRule();
+        k = 50;
+
+        while ( k-- > 0 )
+        {
+          ca3 = ga.crossOver( ca1, ca2 );
+          ga.mutate( ca3, sr, (int)(ca3.getRuleWidthInBits()*sr.nextDouble()*0.10), false ); 
+          assertTrue( ca3.getLambda() <= 1.0 && ca3.getLambda() >= 0.0 );
+        }
+
+      }
+
+    }
+
+  @Test
     public void test_randomziedCA ()
     {
       mDiary.trace3( "Testing: randomizedICCA()" );
@@ -32,6 +96,35 @@ public class CATest extends Loggable
       String s = ca.toString();
       mDiary.trace3( " CA: " + s );
       assertTrue( s.length() == 20 );
+    }
+
+  @Test
+    public void test_randomizedCA_dist ()
+    {
+      int k = 5000;
+      int n = 0;
+      double epsilon = 0.01;
+      double target_lambda = 0.876;
+      double sum = 0.0;
+      CA ca = new CA();
+      CA previousca = new CA();
+      ca.setRadius( 2 );
+      previousca.setRadius( 2 );
+      SecureRandom sr = new SecureRandom();
+
+      while ( k-- > 0 )
+      {
+    //    previousca.setRule( ca.getRule() );
+        ca.setRule( ca.getRequiredBytesForRule(), sr, target_lambda );
+    //    assertTrue( ca.getRule().equals( previousca.getRule() ) == false );
+        sum += ca.getLambda();
+        n++;
+
+      }
+
+      double f = sum/n;
+
+      assertTrue( Math.abs( target_lambda - f ) < epsilon );
     }
 
   @Test(expected=RuntimeException.class)

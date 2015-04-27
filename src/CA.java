@@ -157,7 +157,6 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
   public void randomizedRule ( SecureRandom sr )
   {
     setRule( (int)(getRuleWidthInBits()/8), sr );
-    mCAHistory.setRule( getRuleWidthInBits(), mRule );
   }
 
   public void setRule ( long l )
@@ -170,6 +169,25 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
   {
     mRule = bs;
     mCAHistory.setRule( getRuleWidthInBits(), mRule );
+  }
+
+  public static BitSet stringToRule ( String s, int l )
+  {
+    byte[] bs = s.getBytes( StandardCharsets.US_ASCII );
+    BitSet rule = new BitSet(l);
+
+    for ( int k = 0; k < s.length(); k++ )
+    {
+      if ( bs[k] == (byte)49 )
+        rule.set( k );
+    }
+
+    return rule;
+  }
+
+  public void setRule ( String s )
+  {
+    setRule( stringToRule( s, s.length() ) );
   }
 
   public void setRule ( byte [] r )
@@ -186,10 +204,25 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
 
   public void setRule ( int n, Random r )
   {
-    byte [] b = new byte[n];
-    r.nextBytes( b );
-    mRule = BitSet.valueOf( b );
-    b = null;
+    setRule( n, r, r.nextDouble() ); // value between 0.0 - 1.0
+  }
+
+  public void setRule ( int n, Random r, double target_lambda )
+  {
+    // byte [] b = new byte[n];
+    // r.nextBytes( b );
+    
+    BitSet bs = new BitSet( n*8 );
+
+    for ( int k = 0; k < n*8; k++ )
+    {
+      if ( r.nextDouble() <= target_lambda )
+        bs.set( k );
+    }
+    
+    // mRule = BitSet.valueOf( b );
+    mRule = bs;
+
     mCAHistory.setRule( getRuleWidthInBits(), mRule );
   }
   public BitSet getRule () { return mRule; }
@@ -228,15 +261,11 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
 
   public String ruleToString ()
   {
-    byte [] bs = new byte[ (int)(mRuleWidthBits/8) ];
-    byte [] mba = mRule.toByteArray();
+    int len = (int)(mRuleWidthBits);
     StringBuffer sb = new StringBuffer();
 
-    for ( int k = bs.length-1; k >= 0; k-- )
-      bs[k] = mba[k];
-
-    for ( byte b : bs )
-      sb.append( Integer.toBinaryString( b ) );
+    for ( int k = 0; k < len; k++ )
+      sb.append( mRule.get( k ) ? "1" : "0" );
 
     return sb.toString();
   }
@@ -281,6 +310,7 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
   public void step ()
   {
     mChangedLastStep = false;
+    mNumIterations++;
 
 //    byte [] neighborhood = new byte[ mDiameter ];
     int l = mICWidth;
@@ -327,6 +357,7 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
   {
     mDiary.trace5( "iterate("+i+")" );
     int j = i;
+    mNumIterations = 0;
 
     if ( mICready == false )
       throw new RuntimeException( "CA not assigned an initial condition!" );
@@ -385,6 +416,18 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
   public static byte [] randomizedIC ( SecureRandom r, int width )
   {
     byte b[] = new byte[ width ];
+    double target_rho = r.nextDouble();
+
+    for ( int k = 0; k < width; k++ )
+    {
+      if ( r.nextDouble() <= target_rho )
+        b[k] = (byte)49;
+      else
+        b[k] = (byte)48;
+    }
+
+    /*
+    byte b[] = new byte[ width ];
     r.nextBytes( b );
     int j = width;
 
@@ -398,6 +441,7 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
 
       b[j] = (byte)(k + (byte)48);
     }
+    */
 
     return b;
   }
