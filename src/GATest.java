@@ -10,6 +10,7 @@ import java.util.BitSet;
 import java.util.Arrays;
 
 import java.util.List;
+import java.util.ArrayList;
 
 public class GATest extends Loggable
 {
@@ -20,8 +21,8 @@ public class GATest extends Loggable
     public void test_crossover ()
     {
       GA ga = new GA();
-      CA a = new CA( 20, 2 );
-      CA b = new CA( 20, 2 );
+      CA a = new CA( 121, 2 );
+      CA b = new CA( 121, 2 );
       CA c = null;
       BitSet as, bs, cs;
       int i = 10, k = 0;
@@ -46,7 +47,6 @@ public class GATest extends Loggable
         for ( ; k < c.getRuleWidthInBits(); k++ )
           assertTrue( cs.get( k ) == bs.get( k ) );
 
-
       } // while i-- 
 
     }
@@ -55,8 +55,8 @@ public class GATest extends Loggable
     public void test_mismatchwidth_crossover()
     {
       GA ga = new GA();
-      CA a = new CA( 20, 3 );
-      CA b = new CA( 20, 2 );
+      CA a = new CA( 121, 3 );
+      CA b = new CA( 121, 2 );
 
       a.randomizedRule();
       b.randomizedRule();
@@ -118,4 +118,24 @@ public class GATest extends Loggable
       assertTrue( ga.getGenerations() == GA.DEFAULT_GENERATIONS );
     }
 
+  @Test
+    public void test_ga_randomizeIC ()
+    {
+      GA ga = new GA();
+
+      List<byte[]> ics = new ArrayList<byte[]>();
+      List<byte[]> newics = null;
+      
+      for ( byte[] b : ga.getICs() )
+        ics.add( Arrays.copyOf( b , b.length ) );
+
+      ga.randomizeICList();
+      newics = ga.getICs();
+
+      for ( int k = 0; k < newics.size(); k++ )
+        assertTrue( ics.get( k ) != newics.get( k ) );
+
+      assertTrue( ics != newics );
+      assertTrue( ics.size() == newics.size() );
+    }
 }

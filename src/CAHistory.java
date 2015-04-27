@@ -57,9 +57,9 @@ class CAHistory extends Loggable
 
     mRho.put( ca.getIC0(), rhos );
 
-    if ( rhos[0] > 0.5 && rhos[1] < mLowerBound )
+    if ( rhos[0] > 0.5 && rhos[1] > mUpperBound )
       fitness++;
-    else if ( rhos[0] <= 0.5 && rhos[1] > mUpperBound )
+    else if ( rhos[0] <= 0.5 && rhos[1] < mLowerBound )
       fitness++;
 
     // mDiary.info( " r0: " + rhos[0] + " r: " + rhos[1] + " f: " + fitness +

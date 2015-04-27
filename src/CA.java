@@ -157,26 +157,31 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
   public void randomizedRule ( SecureRandom sr )
   {
     setRule( (int)(getRuleWidthInBits()/8), sr );
+    mCAHistory.setRule( getRuleWidthInBits(), mRule );
   }
 
   public void setRule ( long l )
   {
     mRule = BitSet.valueOf( new long[]{ l } );
+    mCAHistory.setRule( getRuleWidthInBits(), mRule );
   }
 
   public void setRule ( BitSet bs )
   {
     mRule = bs;
+    mCAHistory.setRule( getRuleWidthInBits(), mRule );
   }
 
   public void setRule ( byte [] r )
   {
     mRule = BitSet.valueOf( r );
+    mCAHistory.setRule( getRuleWidthInBits(), mRule );
   }
 
   public void setRule ( Random r )
   {
     setRule( this.getRequiredBytesForRule(), r );
+    mCAHistory.setRule( getRuleWidthInBits(), mRule );
   }
 
   public void setRule ( int n, Random r )
@@ -185,6 +190,7 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
     r.nextBytes( b );
     mRule = BitSet.valueOf( b );
     b = null;
+    mCAHistory.setRule( getRuleWidthInBits(), mRule );
   }
   public BitSet getRule () { return mRule; }
   public String getRuleAsBinaryString () { return bitSetToBinaryString( mRule ); }
@@ -401,6 +407,11 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
     mNumIterations = iterate();
 
     return ( this );
+  }
+
+  public float getLambda ()
+  {
+    return mCAHistory.lambda;
   }
 
   public int iterateBackground ( List<byte[]> ICs, ExecutorService es )

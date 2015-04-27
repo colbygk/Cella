@@ -40,6 +40,7 @@ public class Gella extends Loggable
   static final String HELPOPTION = "h";
   static final String BENCHOPTION = "b";
   static final String ICOPTION = "c";
+  static final String CALOGOPTION = "l";
   static final String GENERATIONSOPTION = "g";
 
   private int mICWidth = 0;
@@ -51,6 +52,8 @@ public class Gella extends Loggable
   private int mMaxWorkers = CA.MAX_WORKERS;
 
   private GA mySharona = null;
+
+  private String mCALogFileName = null;
 
   protected Gella() 
   {
@@ -89,7 +92,12 @@ public class Gella extends Loggable
     mDiary.trace5( "start()" );
 
     GA ga = new GA( mPop, mICCount, mICWidth, mRadius, mIterations, mGenerations );
+
+    if ( mCALogFileName != null )
+      ga.setCALogFileName( mCALogFileName );
+
     ga.runTestSimulation( mMaxWorkers );
+
   }
 
   private Options setupCommandLineOptions()
@@ -106,6 +114,7 @@ public class Gella extends Loggable
     o.addOption( POPOPTION, true, "Set population of CA's" );
     o.addOption( GENERATIONSOPTION, true, "Set number of generations to run" );
     o.addOption( ICOPTION, true, "Set number of Initial Conditions to use" );
+    o.addOption( CALOGOPTION, true, "Log lambda on each generation to specified filename and elite rule lambdas" );
 
     return o;
   }
@@ -148,6 +157,13 @@ public class Gella extends Loggable
         mICCount = GA.getDefaultICCount();
       }
       sb.append( "%  ic count:" + mICCount + "\n" );
+
+      mDiary.trace5( "  CA Log option" );
+      if ( cl.hasOption( CALOGOPTION ) )
+      {
+        mCALogFileName = cl.getOptionValue( CALOGOPTION );
+      }
+      sb.append( "%  CA Log option:"  + mCALogFileName +  "\n" );
 
 
       mDiary.trace5( "  Width option" );
