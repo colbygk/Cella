@@ -1,27 +1,62 @@
 
 \section{Methods} \label{sec:methods}
 
-This is where methods go.
+In this section we briefly describe the methods used to generate our results.
 
 \subsection{GA parameters}
 
-- Method for initializing initial population rules.
+All runs of the GA used a population of 50 CAs, and the population is evolved for 50 generations. 
+Initial rules were chosen from a uniform distribution of $\lambda \in \lbrack0.0, 1.0\rbrack$.
 
-- Selection method (tournement with eliteism).
+All CAs begin with an initial fitness of 0.0. At each generation, each CA was tested against a set of 100 ICs by 
+running the CA on each IC for 200 iterations or until there was no change in the bit string over two iterations (indicating that 
+the CA had settled into a steady state for that IC). 
 
-- Methods for speeding things up?
+For the results reported in section~\ref{sec:2_1}, we used the fitness function given in equation~\ref{eq:fitness_1}, where 
+$\Delta_{fitness}$ is the change in fitness for a CA, and $\rho_n$ is the iteration at which the CA stopped ($n \leq 200$). This fitness 
+function is very simple: Given an IC, the fitness for a CA is increased by 1.0 if and only if it settles to all \texttt{1}s when $\rho_0 > 0.5$ or 
+settles to all \texttt{0}s when $\rho_0 < 0.5$.
+\begin{equation} \label{eq:fitness_1}
+  \Delta_{fitness} =
+  \begin{cases}
+    +1.0 & \text{if } \rho_0 < 0.5 \text{ and } \rho_n = 0.0,
+    \\
+    +1.0 & \text{if } \rho_0 > 0.5 \text{ and } \rho_n = 1.0,
+   \\
+    0.0 & \text{otherwise}.
+  \end{cases}
+\end{equation}
+With fitness function (\ref{eq:fitness_1}), the maximum fitness for a CA during its lifetime is 100, and the minimum is 0. Note that fitness 
+scores are reset to 0 after each generation, even for the elite rules.
 
-- Mutation rate?
+For the results reported in section~\ref{sec:2_3}, we adjusted the fitness function so that easy-to-classify cases (where 
+$\rho_0 \approx 0.0$ or $\rho_0 \approx 1.0$) became worth less as the generation increased. This has the effect of focusing the GA 
+search on those rules that can successfully solve the harder ICs.
 
-\subsection{Chosing ICs}
+The GA uses tournament selection with elitism. After assessing the fitness of each CA, the top 10\% are copied to the next generation, 
+without any mutation or crossover. The remaining 90\% are filled in by randomly selecting two pairs from the population, and the members of 
+each pair compete for the opportunity to reproduce, the CA with the higher fitness wins. A single crossover point is chosen at random, 
+and a new rule is constructed using one segment from each parent. Finally, 10\% of the bits in the resulting rule are mutated (i.e., flipped).
 
-- Method for chosing ICs.
+\subsection{Choosing ICs}
 
-- If in section 2.3 we modify this from uniform to normal then it could go here.
+Each generation was tested against a set of 100 ICs, and a new set was created for each generation. ICs were chosen 
+from a uniform distribution $\rho_0 \in \lbrack1.0, 0.0\rbrack$ to make the inclusion of easier ICs equally likely as 
+harder, $\rho_0 \approx 0.5$ ICs.
+
+We considered changing this distribution for \ref{sec:2_3}: Including the easier-to-classify ICs in the training set 
+slows down the discovery of better solutions at later generations, so one way to correct for this is to make the inclusion of 
+those ICs less likely as the generation increases. However, we instead opted for adjusting the fitness function as described 
+above.
+
+\subsection{Implementation and Optimization}
+
+The GA was implemented in Java with various optimizations. 
+
+All experiments were run on ??????????????
 
 \subsection{Data analysis methods}
 
-- Describe how data was analyzed.
-
+Data was analyzed in Matlab.
 
 
