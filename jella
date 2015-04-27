@@ -9,10 +9,23 @@ include Java
 import 'cs523.project2.CA'
 
 import java.awt.Color
+import java.awt.Dimension
+import java.awt.event.ActionListener
 import javax.swing.JFrame
 import javax.swing.JPanel
+import javax.swing.JButton
+import javax.swing.SwingConstants
+import javax.swing.SwingUtilities
+import javax.swing.JLabel
+import javax.swing.BorderFactory
+import javax.swing.GroupLayout
+
 import java.math.BigInteger
-import java.util.Random
+import java.security.SecureRandom
+
+import java.lang.Thread
+
+$radii = 3
 
 class Canvas < JPanel
 
@@ -22,17 +35,19 @@ class Canvas < JPanel
 
   def drawCA g
 
-    ca = CA.new( 500, 3 )
+    ca = CA.new( 750, $radii )
+    ca.setStopIfStatic( true )
     ca.randomizedIC
-    ca.setRule( BigInteger.new( 128, Random.new ) )
+    ca.setRule( 16, SecureRandom.new )
     ca.buildRulesMap
+
     g.setColor Color.new 0, 0, 0
-    for y in 0..700
+    for y in (0..750)
       ca.step
-      x = 10
+      x = 0
       ca.toString.each_char do |c|
         if c == "1"
-          g.drawLine( x, y, x+1, y )
+          g.fillRect( x, y, 1, 1 )
         end
         x = x + 1
       end
@@ -41,6 +56,29 @@ class Canvas < JPanel
 
   end
 
+end
+
+class RadiusButton < JButton 
+  include ActionListener
+
+  def initialize( text )
+    @r = 2
+    @text = text
+    super "#{@text} #{@r}"
+    addActionListener self
+    $radii = @r
+  end
+
+  def actionPerformed( event )
+    if @r == 2
+      @r = 3
+    else
+      @r = 2
+    end
+    self.text = "#{@text} #{@r}"
+    $radii = @r
+    SwingUtilities.invokeLater { repaint }
+  end
 end
 
 class Jella < JFrame
@@ -53,10 +91,39 @@ class Jella < JFrame
       
     def initUI
         
-      canvas = Canvas.new
-      self.getContentPane.add canvas
+      layout = GroupLayout.new self.getContentPane
+      self.getContentPane.setLayout layout
+      layout.setAutoCreateGaps true
+      layout.setAutoCreateContainerGaps true
 
-      self.setSize 600, 800
+
+      cal = JLabel.new "Cellular Automata"
+      canvas = Canvas.new
+      canvas.setMinimumSize Dimension.new 750, 750
+      canvas.setMaximumSize Dimension.new 750, 750
+      canvas.setPreferredSize Dimension.new 750, 750
+      canvas.setBorder BorderFactory.createLineBorder Color.gray
+      radiusButton = RadiusButton.new "Radius"
+
+      sgh = layout.createSequentialGroup
+      pg1 = layout.createParallelGroup
+      pg1.addComponent cal
+      pg1.addComponent canvas
+      pg1.addComponent radiusButton
+      sgh.addGroup pg1
+      layout.setHorizontalGroup sgh
+
+      sgv = layout.createSequentialGroup
+      pg2 = layout.createParallelGroup
+      sgv.addComponent cal
+      sgv.addComponent canvas
+      sgv.addComponent radiusButton
+      sgv.addGroup pg2
+      layout.setVerticalGroup sgv
+
+
+      self.pack
+
       self.setDefaultCloseOperation JFrame::EXIT_ON_CLOSE
       self.setLocationRelativeTo nil
       self.setVisible true
@@ -65,8 +132,12 @@ class Jella < JFrame
 
 end
 
-Jella.new
+jella = Jella.new
 
+while true do
+  Thread.sleep 1
+  jella.repaint
+end
 
 
 

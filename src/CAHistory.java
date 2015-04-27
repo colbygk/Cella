@@ -12,10 +12,15 @@ class CAHistory extends Loggable
   public float lambda = 0.0f;
   private BitSet mRule = null;
   public int fitness = 0;
+  public float mLowerBound = 0.0f;
+  public float mUpperBound = 1.0f;
 
-  public CAHistory ()
+  public CAHistory ( float l, float u )
   {
     mDiary = getDiary();
+
+    mLowerBound = l;
+    mUpperBound = u;
   }
 
   public void setRule ( int bits, BitSet r )
@@ -24,7 +29,7 @@ class CAHistory extends Loggable
     lambda = (float)((float)mRule.cardinality() / (float)bits);
   }
 
-  public float compute_rho ( byte [] ic )
+  public static float compute_rho ( byte [] ic )
   {
     int k = 0;
 
@@ -42,15 +47,23 @@ class CAHistory extends Loggable
     mRho.put( ic, rhos );
   }
 
-  public synchronized void add_result ( byte [] ic0, byte [] icn )
-  {
-    float [] rhos = mRho.get( ic0 );
-    rhos[1] = compute_rho( icn );
 
-    if ( rhos[0] > 0.5 && rhos[1] == 1.0 )
+
+  public synchronized void add_result ( CA ca )
+  {
+    float [] rhos = new float[2];
+    rhos[0] = ca.get_rho0();
+    rhos[1] = ca.get_rho();
+
+    mRho.put( ca.getIC0(), rhos );
+
+    if ( rhos[0] > 0.5 && rhos[1] > mUpperBound )
       fitness++;
-    else if ( rhos[0] <= 0.5 && rhos[1] == 0.0 )
+    else if ( rhos[0] <= 0.5 && rhos[1] < mLowerBound )
       fitness++;
+
+    // mDiary.info( " r0: " + rhos[0] + " r: " + rhos[1] + " f: " + fitness +
+      //   " l: " + mLowerBound + " u: " + mUpperBound);
   }
 }
 

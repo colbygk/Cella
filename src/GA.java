@@ -18,12 +18,19 @@ import java.util.Random;
 import java.util.BitSet;
 import java.util.Arrays;
 
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.BrokenBarrierException;
+import java.io.IOException;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 import java.math.BigInteger;
 import java.io.PrintStream;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
+
+import java.nio.charset.StandardCharsets;
 
 public class GA extends Loggable
 {
@@ -35,6 +42,7 @@ public class GA extends Loggable
   public static final int DEFAULT_RADIUS = 3;
   public static final int DEFAULT_ITERATIONS = 300;
   public static final int DEFAULT_GENERATIONS = 50;
+  public static final int ELITE_NUM = 10;
   private int mPop = 0;
   private int mICCount = 0;
   private int mRadius = 0;
@@ -51,10 +59,11 @@ public class GA extends Loggable
   private List<byte[]> mInitialConditions = null;
   public List<byte[]> getICs() { return mInitialConditions; }
   private List<CA> mRules = null;
+  private List<CA> mOldRules = null;
+  private List<CA> mMidRules = null;
   public List<CA> getRules() { return mRules; }
 
   private SecureRandom mSR = null;
-  private CyclicBarrier mBarrier = null;
 
   PrintStream out = System.out;
 
@@ -77,18 +86,51 @@ public class GA extends Loggable
     mGenerations = g;
 
     mRules = new ArrayList<CA>();
+    mOldRules = new ArrayList<CA>();
     mInitialConditions = new ArrayList<byte[]>();
 
     mSR = new SecureRandom();
     for ( int k = 0; k < mPop; k++ )
       mRules.add( initCA( mSR )  );
 
-    byte[] bs = null;
-    for ( int k = 0; k < mICCount; k++ )
-      mInitialConditions.add( CA.randomizedIC( mICWidth ) );
-
+    randomizeICList();
   }
 
+  public void randomizeICList ()
+  {
+    mInitialConditions.clear();
+
+    // This creates an even number of rules
+    // with a rho_0 > .5 and rho_0 < 0.5
+    boolean upper_rho = true;
+    byte [] aic = null;
+    float rho = 0.0f;
+    int k = 0;
+    while ( k < mICCount )
+    {
+      aic = CA.randomizedIC( mICWidth );
+      rho = CAHistory.compute_rho( aic );
+      if ( upper_rho && rho > 0.5 )
+      {
+        mInitialConditions.add( aic );
+        upper_rho = false;
+        k++;
+      }
+      else if ( ! upper_rho && rho < 0.5 )
+      {
+        mInitialConditions.add( aic );
+        upper_rho = true;
+        k++;
+      }
+    }
+
+    if ( mDiary.getLevel().isGreaterOrEqual( XLevel.TRACE3 ) )
+    {
+      mDiary.trace3( " IC#" + mInitialConditions.size() );
+      for ( byte[] ic : mInitialConditions )
+        mDiary.trace3( "  IC: " + new String( ic, StandardCharsets.US_ASCII ) );
+    }
+  }
 
   public static int getDefaultPop () { return DEFAULT_POP; }
   public static int getDefaultICCount () { return DEFAULT_ICCOUNT; }
@@ -98,30 +140,106 @@ public class GA extends Loggable
   public static int getDefaultGenerations () { return DEFAULT_GENERATIONS; }
 
   public int getRuleWidthInBits () { return mRuleWidth; }
+  private BufferedWriter mCALogFile = null;
+  private BufferedWriter mCALogElitesFile = null;
+  public String mCALogFileName = "lambdas.log";
+  public boolean mCALog = false;
+  public void setCALogFileName ( String n )
+  {
+    mCALog = true;
+    mCALogFileName = n;
+  }
+
+
+  public void logCAElitesPop ()
+  {
+    if ( mCALog )
+    {
+      try
+      {
+        if ( mCALogElitesFile == null )
+        {
+          mCALogElitesFile = new BufferedWriter(
+              new FileWriter( "elites." + mCALogFileName, false ) );
+        }
+
+        StringBuffer sb = new StringBuffer();
+        CA ca = null;
+
+        for ( int k = 0; k < GA.ELITE_NUM; k++ )
+        {
+          ca = mRules.get( k );
+          sb.append( ca.getLambda() ).append(" ");
+        }
+        sb.append("\n");
+
+        mCALogElitesFile.write( sb.toString() );
+        mCALogElitesFile.flush();
+      }
+      catch ( IOException ioe )
+      {
+        mDiary.warn( "Unable to log CA population lambdas: " + ioe.getMessage() );
+      }
+    }
+  }
+
+  public void logCAPop ()
+  {
+    if ( mCALog )
+    {
+      try
+      {
+        if ( mCALogFile == null )
+        {
+          mCALogFile = new BufferedWriter( new FileWriter( mCALogFileName, false ) );
+        }
+
+        StringBuffer sb = new StringBuffer();
+        CA ca = null;
+
+        for ( int k = 0; k < mRules.size(); k++ )
+        {
+          ca = mRules.get( k );
+          sb.append( ca.getLambda() ).append(" ");
+        }
+        sb.append("\n");
+
+        mCALogFile.write( sb.toString() );
+        mCALogFile.flush();
+      }
+      catch ( IOException ioe )
+      {
+        mDiary.warn( "Unable to log CA population lambdas: " + ioe.getMessage() );
+      }
+    }
+  }
 
   public CA crossOver ( CA a, CA b )
   {
-    if ( a.getRuleWidthInBits() != b.getRuleWidthInBits() )
+    int rwa = a.getRuleWidthInBits();
+
+    if ( rwa != b.getRuleWidthInBits() )
     {
       throw new RuntimeException( "Whoa there, this implementation cannot do cross over with" +
           " mismatched rule bit widths (different radii): " +
           "a:" + a + " b:" + b );
     }
 
-    int rw = a.getRuleWidthInBits();
-    int crossPoint = mSR.nextInt( rw );
+    int crossPoint = mSR.nextInt( rwa );
     BitSet ar = a.getRule();
     BitSet br = b.getRule();
     BitSet newR = (BitSet)ar.clone();
 
-    for ( int k = crossPoint; k < rw; k++ )
+    for ( int k = crossPoint; k < rwa; k++ )
       if ( newR.get(k) != br.get(k) )
         newR.flip(k);
 
-    CA ca = new CA( a.getICWidth(), a.getRuleWidthInBits() );
+    CA ca = new CA( a.getICWidth(), a.getRadius() );
+    ca.setCrossPoint( crossPoint );
     ca.setRule( newR );
     ca.setIterations( mIterations );
     ca.buildRulesMap();
+    ca.setParents( ar, br );
     ca.setStopIfStatic( true );
 
     return ca;
@@ -145,7 +263,7 @@ public class GA extends Loggable
         b = r.nextInt( rw );
         Integer i = Integer.valueOf( b );
         s = mutamap.get( i );
-        if ( s != null && s )
+        if ( s != null )
         {
           // No-op
         }
@@ -153,7 +271,7 @@ public class GA extends Loggable
         {
           k++;
           gene.flip( b );
-          mutamap.put( b, true );
+          mutamap.put( i, true );
         }
       }
     }
@@ -199,45 +317,89 @@ public class GA extends Loggable
   public void runTestSimulation ( int nWorkers )
   {
 
-    // Filler to get an idea of how long this will take to run
-    // for a real simulation
-    
+    ExecutorService es = Executors.newFixedThreadPool( nWorkers );
+
     long start = System.nanoTime();
-    int relit = 0;
+    int fitness = 0;
+    int possibleNi = mGenerations * mRules.size() * mInitialConditions.size() * mIterations;
+    int ni = 0;
 
     for ( int gn = 0; gn < mGenerations; gn++ )
     {
+      logCAPop();
+      logCAElitesPop();
+      // logICPop();
+      //
       System.out.print( " generation "+gn );
       for ( CA ca : mRules )
       {
-        System.out.print(".");
-        ca.iterateBackground( mInitialConditions, nWorkers );
+        fitness = ca.iterateBackground( mInitialConditions, es );
+        System.out.print("."+fitness);
+        ni += ca.numActualIterations();
+
         /*
-        for ( byte [] ic : mInitialConditions )
-        {
-          ca.setIC( ic );
-          relit += ca.iterate();
-        }
-        */
+           if ( fitness >= 50 )
+           {
+           mDiary.info("");
+           mDiary.info( " rule: " + ca.toString() );
+           mDiary.info( "   bits: " + ca.getRule() );
+           }
+           */
       }
 
-      System.out.print("xover.mutate.");
+      Collections.sort( mRules );
+
+      mMidRules = mOldRules;
+      mOldRules = mRules;
+      mRules = mMidRules;
+
+      mRules.clear();
+
+      // Take the top rules 
+      for ( int k = 0; k < GA.ELITE_NUM; k++ )
+      {
+        CA ca = mOldRules.get( k );
+        mRules.add( ca );
+      }
+
+      CA w, x, y, z;
+      for ( int k = GA.ELITE_NUM; k < mOldRules.size(); k++ )
+      {
+        w = mOldRules.get( mSR.nextInt( mOldRules.size() ) );
+        x = mOldRules.get( mSR.nextInt( mOldRules.size() ) );
+        y = mOldRules.get( mSR.nextInt( mOldRules.size() ) );
+        z = mOldRules.get( mSR.nextInt( mOldRules.size() ) );
+
+        CA ca1 = ( w.fitness() > x.fitness() ? w : x );
+        CA ca2 = ( y.fitness() > z.fitness() ? y : z );
+
+        mRules.add( crossOver( ca1, ca2 ) );
+      }
+
+      for ( CA ca : mRules )
+        ca.resetFitness();
+
+      System.out.print( fitness + ".xover.mutate.");
       for ( CA ca : mRules )
       {
-        crossOver( ca, ca );
-        mutate( ca, mSR, 1, false );
+        mutate( ca, mSR, (int)(ca.getRuleWidthInBits()*0.10), false );
+        //mutate( ca, mSR, 121, false );
       }
 
-      System.out.println("done");
+      System.out.println("done " + mRules.size());
 
-    }
+      randomizeICList();
+
+
+    } // Generations loop
+
     long end = System.nanoTime();
-    int ni = mGenerations * mRules.size() * mInitialConditions.size() * mIterations;
-    ni = relit;
 
     out.println( String.format( " %07d iters %10.0f iter/sec (%3.2f s)",
           ni, (ni/((end-start)/1e9)), (end-start)/1e9, ni) );
     out.println( String.format( " total time: %3.2f", (end-start)/1e9 ) );
+
+    es.shutdown();
 
   }
 }

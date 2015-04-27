@@ -16,36 +16,56 @@ import java.util.Set;
 import java.util.BitSet;
 import java.util.Arrays;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import java.io.UnsupportedEncodingException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
 import java.util.Random;
-import java.util.concurrent.Semaphore;
 import java.security.SecureRandom;
 
 import java.math.BigInteger;
 
 import java.lang.Comparable;
 
-public class CA extends Loggable implements Comparable<CA>, Runnable
+public class CA extends Loggable implements Comparable<CA>, Callable<CA>
 {
   protected static Diary mDiary = null;
 
 
-  public BitSet [] parents = new BitSet[0];
+  public BitSet [] mParents = null;
+  public void setParents( BitSet a, BitSet b )
+  {
+    mParents = new BitSet[2];
+    mParents[0] = a;
+    mParents[1] = b;
+  }
 
   public static final int MAX_WORKERS = 4;
   private int mMaxWorkers = MAX_WORKERS;
-  private Semaphore backgroundWork = null;
 
   public static final int DEFAULT_ICWIDTH = 121;
   public static final int DEFAULT_RULEWIDTH = 32;
+
+  private int mCrossedAt = 0;
+  public void setCrossPoint( int cp ) { mCrossedAt = cp; }
+  public int getCrossPoint() { return mCrossedAt; }
 
   private int mICWidth = DEFAULT_ICWIDTH;
   private int mRuleWidthBits = DEFAULT_RULEWIDTH;
   public int getICWidth() { return mICWidth; }
   public int getRuleWidthInBits() { return mRuleWidthBits; }
+
+  private float mLowerBound = 0.0f;
+  private float mUpperBound = 1.0f;
+
+  private int mNumIterations = 0;
+  public int numActualIterations() { return mNumIterations; }  
 
   private int mRadius = 0;
   private int mDiameter = 0;
@@ -57,6 +77,8 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
 
   private boolean mICready = false;
   private byte[] mIC = null;
+  private byte[] mIC0 = null;
+  public byte[] getIC0() { return mIC0; }
   private byte[] mMidIC = null;
   private byte[] mICcopy = null;
 
@@ -76,12 +98,17 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
   public void setIterations ( int i ) { mIterations = i; }
   public int getIterations () { return mIterations; }
 
-  private int mFitness = 0;
-
   private Neighborhood mCachedHood = null;
 
   private CAHistory mCAHistory = null;
   public CAHistory getHistory() { return mCAHistory; }
+
+  private float mRho0 = 0.0f;
+  public float get_rho0() { return mRho0; }
+  public void set_rho0( float r ) { mRho0 = r; }
+  private float mRho = 0.0f;
+  public float get_rho() { return mRho; }
+  public void set_rho( float r ) { mRho = r; }
 
   PrintStream out = System.out;
 
@@ -96,6 +123,8 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
     mDiary.trace3( "Instantiating CA() length:" + l );
 
     mICWidth = l;
+    mLowerBound = (float)1.0f/(float)l;
+    mUpperBound = (float)(l-1.0f)/(float)l;
     setRadius( r );
     mIC = new byte[ mICWidth ];
     mMidIC = new byte[ mICWidth ];
@@ -104,7 +133,7 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
     // Defaults to 100
     // Good enough for 2^5 rules or Radius 2 
     mRules = new HashMap<Neighborhood, byte[]>();
-    mCAHistory = new CAHistory();
+    mCAHistory = new CAHistory( mLowerBound, mUpperBound );
 
   }
 
@@ -128,26 +157,31 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
   public void randomizedRule ( SecureRandom sr )
   {
     setRule( (int)(getRuleWidthInBits()/8), sr );
+    mCAHistory.setRule( getRuleWidthInBits(), mRule );
   }
 
   public void setRule ( long l )
   {
     mRule = BitSet.valueOf( new long[]{ l } );
+    mCAHistory.setRule( getRuleWidthInBits(), mRule );
   }
 
   public void setRule ( BitSet bs )
   {
     mRule = bs;
+    mCAHistory.setRule( getRuleWidthInBits(), mRule );
   }
 
   public void setRule ( byte [] r )
   {
     mRule = BitSet.valueOf( r );
+    mCAHistory.setRule( getRuleWidthInBits(), mRule );
   }
 
   public void setRule ( Random r )
   {
     setRule( this.getRequiredBytesForRule(), r );
+    mCAHistory.setRule( getRuleWidthInBits(), mRule );
   }
 
   public void setRule ( int n, Random r )
@@ -156,6 +190,7 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
     r.nextBytes( b );
     mRule = BitSet.valueOf( b );
     b = null;
+    mCAHistory.setRule( getRuleWidthInBits(), mRule );
   }
   public BitSet getRule () { return mRule; }
   public String getRuleAsBinaryString () { return bitSetToBinaryString( mRule ); }
@@ -310,12 +345,15 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
         break;
     }
 
+    mRho = CAHistory.compute_rho( mIC );
+
     return ( i-j );
   }
 
   public void initialize ( String s )
   {
     mIC = s.getBytes( StandardCharsets.US_ASCII );
+    mIC0 = s.getBytes( StandardCharsets.US_ASCII );
     mICready = true;
   }
 
@@ -327,7 +365,9 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
   public void setIC ( byte [] ic )
   {
     mIC = Arrays.copyOf( ic, ic.length );
-    mCAHistory.add_rho0( ic );
+    mIC0 = ic;
+    mRho0 = CAHistory.compute_rho( mIC0 );
+    mCAHistory.add_rho0( mIC0 ); // needed?
     mICready = true;
   }
   public byte [] getIC () { return mIC; }
@@ -362,60 +402,48 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
     return b;
   }
 
-  public void run ()
+  public CA call ()
   {
-    try
-    {
-      backgroundWork.acquire();
+    mNumIterations = iterate();
 
-      iterate();
-
-      backgroundWork.release();
-    }
-    catch ( InterruptedException ie )
-    {
-      mDiary.warn( ie.getMessage() );
-    }
+    return ( this );
   }
 
-  public void setSemaphore ( Semaphore bw )
+  public float getLambda ()
   {
-    backgroundWork = bw;
+    return mCAHistory.lambda;
   }
 
-  public void iterateBackground ( List<byte[]> ICs, int mw )
+  public int iterateBackground ( List<byte[]> ICs, ExecutorService es )
   {
+    Future<CA> task;
     CA c = null;
-    backgroundWork = new Semaphore( mw, true );
-    List<Thread> threads = new ArrayList<Thread>();
-    Thread nT = null;
+    List< Future<CA> > results = new ArrayList< Future<CA> >();
+    int fitness;
 
     for ( byte [] ic : ICs )
     {
       c = (CA)this.clone();
       c.setIC( ic );
-      c.setSemaphore( backgroundWork );
 
-      nT = new Thread( c );
-      nT.start();
-
-      threads.add( nT );
+      results.add( (Future<CA>)es.submit( c ) );
     }
 
     try
     {
-      for ( Thread t : threads )
-        t.join();
+      for ( Future<CA> f : results )
+        mCAHistory.add_result( (CA)f.get() );
     }
     catch ( InterruptedException ie )
     {
-      mDiary.warn( ie.getMessage() );
+      mDiary.error( ie.getMessage() );
     }
-  }
+    catch ( ExecutionException ee )
+    {
+      mDiary.error( ee.getMessage() );
+    }
 
-  public float rho ()
-  {
-    return 0.0f;
+    return mCAHistory.fitness;
   }
 
   public Set sortedEntrySet ()
@@ -424,10 +452,14 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
     return tm.entrySet();
   }
 
-  // NB: fitness always returns 0 at the moment
-  public int fitness()
+  public void resetFitness ()
   {
-    return mFitness;
+    mCAHistory.fitness = 0;
+  }
+
+  public int fitness ()
+  {
+    return mCAHistory.fitness;
   }
 
   @Override
@@ -436,10 +468,11 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
       return ((CA)ca).fitness() == this.fitness();
     }
 
+  // Creates a sort that is high->low
   @Override
     public int compareTo( CA ca )
     {
-      return( this.fitness() - ca.fitness() );
+      return( ca.fitness() - this.fitness() );
     }
 
   @Override
@@ -453,7 +486,7 @@ public class CA extends Loggable implements Comparable<CA>, Runnable
       ca.mStopIfStatic = this.mStopIfStatic;
       ca.mIterations = this.mIterations;
       ca.mCachedHood = new Neighborhood( mDiameter );
-      ca.mCAHistory = this.mCAHistory;
+      ca.mCAHistory = new CAHistory( this.mLowerBound, this.mUpperBound );
 
       return ca;
     }
