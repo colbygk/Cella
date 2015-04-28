@@ -19,9 +19,9 @@ settles to all \texttt{0}s when $\rho_0 < 0.5$.
 \begin{equation} \label{eq:fitness_1}
   \Delta_{fitness} =
   \begin{cases}
-    +1.0 & \text{if } \rho_0 < 0.5 \text{ and } \rho_n = 0.0,
+    1.0 & \text{if } \rho_0 < 0.5 \text{ \& } \rho_n = 0.0,
     \\
-    +1.0 & \text{if } \rho_0 > 0.5 \text{ and } \rho_n = 1.0,
+    1.0 & \text{if } \rho_0 > 0.5 \text{ \& } \rho_n = 1.0,
    \\
     0.0 & \text{otherwise}.
   \end{cases}
@@ -30,8 +30,19 @@ With fitness function (\ref{eq:fitness_1}), the maximum fitness for a CA during 
 scores are reset to 0 after each generation, even for the elite rules.
 
 For the results reported in section~\ref{sec:2_3}, we adjusted the fitness function so that easy-to-classify cases (where 
-$\rho_0 \approx 0.0$ or $\rho_0 \approx 1.0$) became worth less as the generation increased. This has the effect of focusing the GA 
-search on those rules that can successfully solve the harder ICs.
+$\rho_0 \approx 0.0$ or $\rho_0 \approx 1.0$) became worth less in comparison to ICs with $\rho \approx 0.5$ as the generation 
+increased (figure~\ref{eq:fitness_2}).
+\begin{equation} \label{eq:fitness_2}
+  \Delta_{fitness} =
+  \begin{cases}
+    1.0 + g*(\frac{1}{|\rho - 0.5| * 50}) & \text{if } \rho_0 < 0.5 \text{ \& } \rho_n = 0.0,
+    \\
+    1.0 + g*(\frac{1}{|\rho - 0.5| * 50})& \text{if } \rho_0 > 0.5 \text{ \& } \rho_n = 1.0,
+   \\
+    0.0 & \text{otherwise}.
+  \end{cases}
+\end{equation}
+In (\ref{eq:fitness_2}), $g$ is the current generation number, and 50 is a scaling term.
 
 The GA uses tournament selection with elitism. After assessing the fitness of each CA, the top 10\% are copied to the next generation, 
 without any mutation or crossover. The remaining 90\% are filled in by randomly selecting two pairs from the population, and the members of 
