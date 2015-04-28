@@ -1,10 +1,10 @@
 \section{Results} \label{results}
 
 For the results reported here, the CA population is 100, selection is tournament with elitism, offspring CA populations are created with both 
-mutation and crossover, the IC length is 121, the size of the IC test set is 100, and unless otherwise noted, CAs are run for a maximum of 
+mutation and crossover, the IC length is 121, the size of the IC test set is 100, and CAs are run for a maximum of 
 200 iterations per IC over 50 generations. When rules are referred to using decimal notation, the encoding follows Mitchell 
-\cite{Mitchell:1994:ECA:186092.186116} (rather than Wolfram). See section \ref{sec:methods} 
-for full details.
+\cite{Mitchell:1994:ECA:186092.186116}. See section \ref{sec:methods} 
+for more information regarding methods.
 
 \subsection{Comparing neighborhoods} \label{sec:2_1}
 Our first goal was to compare rules with different neighborhoods. In particular, there is a tradeoff between the size of the search space and the 
@@ -33,7 +33,7 @@ low or high, but performance drops as $\rho$ approaches the difficult cases arou
 \label{fig:r2_rho}
 \end{center}
 \end{figure}
-\begin{figure} [h]
+\begin{figure} [ht]
 \begin{center}
 \includegraphics[width=\linewidth]{foo.png}
 \caption{Performance of an elite, $r = 3$ rule as a function of $\rho$. As in the case of an elite $r = 2$ rule (fig.~\ref{fig:r2_rho}), the rule performs well when the proportion of \texttt{1}s is 
@@ -55,7 +55,7 @@ where a new type of strategy is discovered, leading to a new plateau.}
 \label{fig:r2_best_fit}
 \end{center}
 \end{figure}
-\begin{figure} [h]
+\begin{figure} [ht]
 \begin{center}
 \includegraphics[width=\linewidth]{foo.png}
 \caption{Best fitness for $r = 3$ CA by generation. As in the case of $r = 2$ (fig.~\ref{fig:r2_best_fit}), the trajectory exhibits epochs. In contrast to $r = 2$, 
@@ -79,7 +79,7 @@ figure~\ref{fig:histogram}.
 \includegraphics[width=\linewidth]{foo.png}
 \caption{Frequency of different rules (as represented by $\lambda$) by generation. Over 50 runs of the GA, $\lambda$ values were collected at every 
 fifth generation. Early generations are dominated by $\lambda \approx 1.0$ and $\lambda \approx 0.0$ indicating that most rules converged on all 
-\texttt{0}s or all \texttt{1}s, regardless of $rho_0$. By generation XXXXXX, .... yadda yadda yadda.}
+\texttt{0}s or all \texttt{1}s, regardless of $\rho_0$. By generation XXXXXX, .... yadda yadda yadda.}
 \label{fig:histogram}
 \end{center}
 \end{figure}
