@@ -1,3 +1,11 @@
+%
+% Project 2
+% CS 523 Spring 2015
+% 
+% Colby & Whit
+%   Plot out rule lambda histograms
+%
+
 clearvars;
 
 x=load('test.log')';
