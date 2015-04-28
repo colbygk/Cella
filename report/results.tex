@@ -70,17 +70,31 @@ As the generations progress, the rules become more able to accommodate less extr
 
 Let $\lambda$ be the proportion of \texttt{1}s in the binary representation of a rule (section~\ref{sec:methods}). Then the transitions just described are 
 equivalent to shifting from rules with $\lambda = 0$ or $\lambda = 1$ to rules with $\lambda \approx \frac{1}{2}$. This transition is depicted in 
-figure~\ref{fig:histogram}.
+figures~\ref{fig:histogram_r2} and~\ref{fig:histogram_r3}, for $r = 2$ and $r = 3$ runs, respectively.
 
-\begin{figure}
+\afterpage{%
+\begin{figure*}
 \begin{center}
-\includegraphics[width=\linewidth]{foo.png}
-\caption{Frequency of different rules (as represented by $\lambda$) by generation. Over 50 runs of the GA, $\lambda$ values were collected at every 
-fifth generation. Early generations are dominated by $\lambda \approx 1.0$ and $\lambda \approx 0.0$ indicating that most rules converged on all 
-\texttt{0}s or all \texttt{1}s, regardless of $\rho_0$. By generation XXXXXX, .... yadda yadda yadda.}
-\label{fig:histogram}
+\includegraphics[width=\textwidth]{figures/test_hist.eps}
+\caption{Frequency of different elite rules (as represented by $\lambda$) by generation, for 50 $r = 2$ runs. Generations 1 and 2 are biased towards $\lambda \approx 1.0$ and $\lambda \approx 0.0$ indicating that successful rules converged on all \texttt{0}s or all \texttt{1}s, regardless of $\rho_0$. By generation 15 
+successful rules are starting to cluster near $\lambda = 0.5$, a trend that continues to the final generation.}
+\label{fig:histogram_r2}
 \end{center}
-\end{figure}
+\end{figure*}
+\clearpage
+}
+
+\afterpage{%
+\begin{figure*}
+\begin{center}
+\includegraphics[width=\textwidth]{figures/histograms_r3.eps}
+\caption{Frequency of different elite rules (as represented by $\lambda$) by generation, for 50 $r = 3$ runs. Generations 1 and 2 are biased towards $\lambda \approx 1.0$ and $\lambda \approx 0.0$ indicating that successful rules converged on all \texttt{0}s or all \texttt{1}s, regardless of $\rho_0$. By generation 15 
+successful rules are starting to cluster near $\lambda = 0.5$, a trend that continues to the final generation.}
+\label{fig:histogram_r3}
+\end{center}
+\end{figure*}
+\clearpage
+}
 
 Finally, note that each location in the lattice has a transient period in which its state may continue to flip before finally stabilizing (if at all; see figure~\ref{fig:waterfall}). One way to quantify this period is to count the number of times a given location changes state 
 over the 200 iterations of a rule, given an initial condition. In order to visualize the relation between the length of a transient period and the fitness of a rule, 
