@@ -5,17 +5,24 @@ conclusions.
 
 \subsection{On the difference between radius 2 and 3}
 
-As noted above, the size of the search space grows with the radius of a rule ($2^{32}$ for $r = 2$, and $2^{128}$ for $r = 3$), suggesting 
+The size of the search space grows with the radius of a rule ($2^{32}$ for $r = 2$, and $2^{128}$ for $r = 3$), suggesting 
 that searches may be more difficult for CAs with larger neighborhoods. However, a larger radius also means that the CA has more information 
 to work with in deciding which state to transition to, suggesting that finding a solution may be easier for larger radii CAs despite the increased 
 search size.
 
-Figures~\ref{fig:r2_rho} -~\ref{fig:r3_best_fit} show that ??????????
+For both $r = 2$ and $r = 3$, we observe the pattern reported in \cite{Mitchell:1994:ECA:186092.186116}: Strategies begin simple and become 
+more nuanced over time. We can see this progression in the series of histograms given in figures~\ref{fig:histogram_r2} 
+and \ref{fig:histogram_r3}. In both cases, early populations (before generation 5) are dominated with rules that take an IC to all \texttt{0}s or 
+all \texttt{1}s. This is a sort of `gambling' strategy because it `bets' that the correct answer 
+is one way or the other. Interestingly, we also found rules that gambled in a different way: Oscillate $\rho$ back and forth from 1.0 to 0.0 in the hopes 
+that, after 300 iterations, the final global state will be correct. Gambling is better than doing nothing, regardless of how you do it, and the GA 
+was good at discovering this.
 
-As noted above, an early strategy for increasing fitness is simply to go to $\rho_n = 0.0$ or $\rho_n = 1.0$. An interesting outcome for both 
-cases was the presence of fit rules that adopted a different version of the same sort of 'gambling' strategy: Go to $\rho_n = 0.0$ or 
-$\rho = 1.0$ but instead of entering a stable state, oscillate between the two. Whether the classification is evaluated as correct then 
-depends on which global state the CA happens to be in after 200 iterations.
+In both $r = 2$ and $r = 3$, $\lambda$ gradually moves towards 0.5: Rules retain the initial strategy of always converging one way or the other, but begin to include `extreme' values of $\rho_0$ at the other end of the spectrum. In this case we see a slight difference in the histograms for $r = 2$ and 
+$r = 3$. In the former, we see the characteristic `dual peak` around $\lambda = 0.5$; this results from the fact that rules converge from both directions, 
+i.e., from $\lambda \approx 0.0$ and $\lambda \approx 1.0$, but in the $r = 3$ case, we do not see this pattern; instead, we find a peak around 0.5 
+with troughs on either side. We are not certain what is responsible for this distribution, but it could be an artifact of the bin size for the histograms.
+
 
 \subsection{On mutational robustness}
 

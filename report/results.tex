@@ -2,7 +2,7 @@
 
 For the results reported here, the CA population is 100, selection is tournament with elitism, offspring CA populations are created with both 
 mutation and crossover, the IC length is 121, the size of the IC test set is 100, and CAs are run for a maximum of 
-200 iterations per IC over 50 generations. When rules are referred to using decimal notation, the encoding follows Mitchell 
+300 iterations per IC over 50 generations. When rules are referred to using decimal notation, the encoding follows Mitchell 
 \cite{Mitchell:1994:ECA:186092.186116}. See section \ref{sec:methods} 
 for more information regarding methods.
 
@@ -12,14 +12,23 @@ the amount of information available for purposes of setting a location state. La
 hence (intuitively) make a more informed decision about how to set the output bit, but this comes at a cost of increasing the size of the search space by multiple 
 orders of magnitude ($2^{32}$ vs. $2^{128}$).
 
-Figure~\ref{fig:waterfall} shows two typical CA runs on the same IC. Rule XXXX (left) has such-and-such properties, while rule YYYY is an example of a rule that successfully categorizes the IC within 200 iterations.
+Figures~\ref{fig:waterfall_1} and \ref{fig:waterfall_2} show two typical CA runs. The first is an example of a rule that does not converge, while the second 
+is a rule that successfully converges within 300 iterations.
+
 \begin{figure}
 \begin{center}
-\includegraphics[width=\linewidth]{foo.png}
-\caption{Waterfall plots of two typical CA runs on the same IC. The top row is the IC, and each successive row is the result of applying the CA rule 
-to the preceding row. The left hand figure depicts rule XXXX, which fails to converge within 200 iterations; the right hand figure depicts rule YYYY, 
-which correctly categorizes the density of \texttt{1}s in the IC by converging to all \texttt{1}s.}
-\label{fig:waterfall}
+\includegraphics[width=0.8\linewidth]{figures/non_converging_radius2.png}
+\caption{Waterfall plot of a radius 2 rule that fails to converge within 300 iterations. The top row is the initial condition, and each successive row is the 
+result applying the rule to the row above it.}
+\label{fig:waterfall_1}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.8\linewidth]{figures/converging_radius2.png}
+\caption{Waterfall plot of a radius 2 rule that successfully classifies an initial condition.}
+\label{fig:waterfall_2}
 \end{center}
 \end{figure}
 
@@ -27,9 +36,10 @@ Figures~\ref{fig:r2_rho} and \ref{fig:r3_rho} plot the performance of an elite $
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=\linewidth]{foo.png}
-\caption{Performance of an elite, $r = 2$ rule as a function of $\rho$. Rule ZZZZ was tested against multiple ICs (when possible), and the precent correct is plotted on the \textit{y}-axis. As expected, the rule performs well when the proportion of \texttt{1}s is 
-low or high, but performance drops as $\rho$ approaches the difficult cases around $\frac{1}{2}$.}
+\includegraphics[width=\linewidth]{figures/lambda_correctness_1_r2.eps}
+\caption{Performance of two elite, $r = 2$ rules as a function of $\rho$. Each rules' performance was recorded for 1000 ICs with $\rho$ 
+varying in intervals of 0.025, and precent correct is plotted. As expected, both rules perform well for extreme values of $\rho$, but 
+performance drops as $\rho$ approaches the difficult cases around $\frac{1}{2}$.}
 \label{fig:r2_rho}
 \end{center}
 \end{figure}
@@ -44,8 +54,7 @@ low or high, but performance drops as $\rho$ approaches the difficult cases arou
 
 It is also interesting to compare the performance of the most fit $r = 2$ and $r = 3$ rules over multiple generations. Figures~\ref{fig:r2_best_fit} and 
 \ref{fig:r3_best_fit} show the best fitness for a sample run for the two neighborhoods as a function of generation. As can be seen in those figures, both trajectories exhibit `epochs' as described by Mitchell \cite{Mitchell:1994:ECA:186092.186116}: There is an initial plateau interrupted by a jagged rise in 
-best fitness, where these increases represent the discovery of new, dominant strategies. These two runs were chosen because they illustrate the concept 
-of an epoch; other runs behaved differently, e.g., by performing very poorly for most of a run before rapidly increasing in fitness.
+best fitness, where these increases represent the discovery of new, dominant strategies.
 
 \begin{figure}
 \begin{center}
@@ -54,19 +63,13 @@ of an epoch; other runs behaved differently, e.g., by performing very poorly for
 \label{fig:r2_best_fit}
 \end{center}
 \end{figure}
-\begin{figure} [ht]
+\begin{figure} 
 \begin{center}
 \includegraphics[width=\linewidth]{figures/max_epoch_radius3.eps}
 \caption{Best fitness for an $r = 3$ run by generation. As in the case of $r = 2$ (fig.~\ref{fig:r2_best_fit}), the trajectory exhibits epochs; in this case, there appear to be three plateaus.}
 \label{fig:r3_best_fit}
 \end{center}
 \end{figure}
-
-As noted, the epochs depicted in figures~\ref{fig:r2_best_fit} and \ref{fig:r3_best_fit} correspond to different dominant strategies. As reported in 
-\cite{Mitchell:1994:ECA:186092.186116}, these strategies begin simple and become more nuanced over time. initially, since 50\% of each test set of ICs 
-has $\rho_0 > 0.5$ (see section~\ref{sec:methods}), a CA that goes to all \texttt{1}s or all \texttt{0}s will be right 50\% of the time, which is better than never converging in the first place. Consequently, early generations are dominated by rule that adopt this strategy. As the number of generations increases, 
-rules retain the initial strategy of always converging one way or the other, but begin to include `extreme' values of $\rho_0$ at the other end of the spectrum. 
-As the generations progress, the rules become more able to accommodate less extreme values of $\rho_0$.
 
 Let $\lambda$ be the proportion of \texttt{1}s in the binary representation of a rule (section~\ref{sec:methods}). Then the transitions just described are 
 equivalent to shifting from rules with $\lambda = 0$ or $\lambda = 1$ to rules with $\lambda \approx \frac{1}{2}$. This transition is depicted in 
@@ -75,9 +78,10 @@ figures~\ref{fig:histogram_r2} and~\ref{fig:histogram_r3}, for $r = 2$ and $r = 
 \afterpage{%
 \begin{figure*}
 \begin{center}
-\includegraphics[width=\textwidth]{figures/histograms_r3.eps}
+\includegraphics[width=\textwidth]{figures/histograms_r2.eps}
 \caption{Frequency of different elite rules (as represented by $\lambda$) by generation, for 50 $r = 2$ runs. Generations 1 and 2 are biased towards $\lambda \approx 1.0$ and $\lambda \approx 0.0$ indicating that successful rules converged on all \texttt{0}s or all \texttt{1}s, regardless of $\rho_0$. By generation 15 
-successful rules are starting to cluster near $\lambda = 0.5$, a trend that continues to the final generation.}
+successful rules are starting to cluster near $\lambda = 0.5$, and we can also see the characteristic 'dual peaks' resulting from counting both rules that 
+began life near $\lambda = 0.0$ and those that began near $\lambda = 1.0$.}
 \label{fig:histogram_r2}
 \end{center}
 \end{figure*}
@@ -96,8 +100,8 @@ successful rules are starting to cluster near $\lambda = 0.5$, a trend that cont
 \clearpage
 }
 
-Finally, note that each location in the lattice has a transient period in which its state may continue to flip before finally stabilizing (if at all; see figure~\ref{fig:waterfall}). One way to quantify this period is to count the number of times a given location changes state 
-over the 200 iterations of a rule, given an initial condition. In order to visualize the relation between the length of a transient period and the fitness of a rule, 
+Finally, note that each location in the lattice has a transient period in which its state may continue to flip before finally stabilizing (if at all; see figures~\ref{fig:waterfall_1} and \ref{fig:waterfall_2}). One way to quantify this period is to count the number of times a given location changes state 
+over the 300 iterations of a rule, given an initial condition. In order to visualize the relation between the length of a transient period and the fitness of a rule, 
 we recorded the average length of the transients for each rule on each IC in the test set after each generation, and plotted this value against the fitness 
 for that rule (figure~\ref{fig:transients}).
 
@@ -113,8 +117,8 @@ for that rule (figure~\ref{fig:transients}).
 
 Mutational robustness occurs when changes in the genotype are phenotypically neutral: The genomic modification results in no significant change 
 in the traits expressed, and hence no difference in fitness \cite{wagner_role_2012}. When a phenotype is robust in this way, it may be possible for the 
-genome to move to a very different region of search space by accruing changes over multiple generations, increasing the breadth of the search for 
-successful solutions without having to cross low-fitness boundaries.
+genome to move to a very different region of search space by accruing changes over multiple generations, increasing the breadth of the search without 
+having to cross low-fitness boundaries.
 
 If our CAs are mutationally robust, then the nearby neighbors of elite rules should themselves perform well. To assess whether 
 this is the case, we selected XXXX elite rules from both the $r = 2$ and $r = 3$ runs, and randomly mutated each \textit{x} times, for $x = 1,2,3, ... 7$. 
