@@ -43,23 +43,22 @@ low or high, but performance drops as $\rho$ approaches the difficult cases arou
 \end{figure}
 
 It is also interesting to compare the performance of the most fit $r = 2$ and $r = 3$ rules over multiple generations. Figures~\ref{fig:r2_best_fit} and 
-\ref{fig:r3_best_fit} show the best fitness for the two neighborhoods as a function of generation. As can be seen in those figures, both trajectories exhibit 
-`epochs' as described by Mitchell \cite{Mitchell:1994:ECA:186092.186116}: There is an initial plateau interrupted by a jagged rise in best fitness, where 
-these increases represent the discovery of new, dominant strategies. However, as can also be seen from the figures, the $r = 2$ population discovers later epochs sooner than the $r = 3$ population - or maybe they don't, or maybe it's the other way around.
+\ref{fig:r3_best_fit} show the best fitness for a sample run for the two neighborhoods as a function of generation. As can be seen in those figures, both trajectories exhibit `epochs' as described by Mitchell \cite{Mitchell:1994:ECA:186092.186116}: There is an initial plateau interrupted by a jagged rise in 
+best fitness, where these increases represent the discovery of new, dominant strategies. These two runs were chosen because they illustrate the concept 
+of an epoch; other runs behaved differently, e.g., by performing very poorly for most of a run before rapidly increasing in fitness.
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=\linewidth]{figures/max_epoch_radius2.eps}
-\caption{Best fitness for $r = 2$ CA by generation. The trajectory exhibits epochs in the sense that plateaus in best fitness are punctuated by moments 
-where a new type of strategy is discovered, leading to a new plateau.}
+\includegraphics[width=\linewidth]{figures/max_mean_fitness_radius2.eps}
+\caption{Best and mean fitness for an $r = 2$ run by generation. The maximum fitness trajectory exhibits epochs: the population rapidly leaves epoch 1, flattens out until about generation 30, and then climbs again to another plateau. This phenomenon is washed out in the average fitness. Unsurprisingly, the standard 
+deviation (not shown) increases over time, because well-performing rules get better but 90\% of the population is always the result of crossover and mutation.}
 \label{fig:r2_best_fit}
 \end{center}
 \end{figure}
 \begin{figure} [ht]
 \begin{center}
-\includegraphics[width=\linewidth]{figures/max_epoch_radius3.eps}
-\caption{Best fitness for $r = 3$ CA by generation. As in the case of $r = 2$ (fig.~\ref{fig:r2_best_fit}), the trajectory exhibits epochs. In contrast to $r = 2$, 
-however, it takes longer or shorter or whatever if we see any differences.}
+\includegraphics[width=\linewidth]{figures/max_mean_fitness_radius3.eps}
+\caption{Best and mean fitness for an $r = 3$ run by generation. As in the case of $r = 2$ (fig.~\ref{fig:r2_best_fit}), the maximum trajectory exhibits epochs; in this case, there appear to be three plateaus.}
 \label{fig:r3_best_fit}
 \end{center}
 \end{figure}
