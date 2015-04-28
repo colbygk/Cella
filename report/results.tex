@@ -43,23 +43,21 @@ low or high, but performance drops as $\rho$ approaches the difficult cases arou
 \end{figure}
 
 It is also interesting to compare the performance of the most fit $r = 2$ and $r = 3$ rules over multiple generations. Figures~\ref{fig:r2_best_fit} and 
-\ref{fig:r3_best_fit} show the best fitness for the two neighborhoods as a function of generation. As can be seen in those figures, both trajectories exhibit 
-`epochs' as described by Mitchell \cite{Mitchell:1994:ECA:186092.186116}: There is an initial plateau interrupted by a jagged rise in best fitness, where 
-these increases represent the discovery of new, dominant strategies. However, as can also be seen from the figures, the $r = 2$ population discovers later epochs sooner than the $r = 3$ population - or maybe they don't, or maybe it's the other way around.
+\ref{fig:r3_best_fit} show the best fitness for a sample run for the two neighborhoods as a function of generation. As can be seen in those figures, both trajectories exhibit `epochs' as described by Mitchell \cite{Mitchell:1994:ECA:186092.186116}: There is an initial plateau interrupted by a jagged rise in 
+best fitness, where these increases represent the discovery of new, dominant strategies. These two runs were chosen because they illustrate the concept 
+of an epoch; other runs behaved differently, e.g., by performing very poorly for most of a run before rapidly increasing in fitness.
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=\linewidth]{foo.png}
-\caption{Best fitness for $r = 2$ CA by generation. The trajectory exhibits epochs in the sense that plateaus in best fitness are punctuated by moments 
-where a new type of strategy is discovered, leading to a new plateau.}
+\includegraphics[width=\linewidth]{figures/max_epoch_radius2.eps}
+\caption{Best fitness for an $r = 2$ run by generation. The maximum fitness trajectory exhibits epochs: the population rapidly leaves epoch 1, flattens out until about generation 30, and then climbs again to another plateau.}
 \label{fig:r2_best_fit}
 \end{center}
 \end{figure}
 \begin{figure} [ht]
 \begin{center}
-\includegraphics[width=\linewidth]{foo.png}
-\caption{Best fitness for $r = 3$ CA by generation. As in the case of $r = 2$ (fig.~\ref{fig:r2_best_fit}), the trajectory exhibits epochs. In contrast to $r = 2$, 
-however, it takes longer or shorter or whatever if we see any differences.}
+\includegraphics[width=\linewidth]{figures/max_epoch_radius3.eps}
+\caption{Best fitness for an $r = 3$ run by generation. As in the case of $r = 2$ (fig.~\ref{fig:r2_best_fit}), the trajectory exhibits epochs; in this case, there appear to be three plateaus.}
 \label{fig:r3_best_fit}
 \end{center}
 \end{figure}
@@ -72,17 +70,31 @@ As the generations progress, the rules become more able to accommodate less extr
 
 Let $\lambda$ be the proportion of \texttt{1}s in the binary representation of a rule (section~\ref{sec:methods}). Then the transitions just described are 
 equivalent to shifting from rules with $\lambda = 0$ or $\lambda = 1$ to rules with $\lambda \approx \frac{1}{2}$. This transition is depicted in 
-figure~\ref{fig:histogram}.
+figures~\ref{fig:histogram_r2} and~\ref{fig:histogram_r3}, for $r = 2$ and $r = 3$ runs, respectively.
 
-\begin{figure}
+\afterpage{%
+\begin{figure*}
 \begin{center}
-\includegraphics[width=\linewidth]{foo.png}
-\caption{Frequency of different rules (as represented by $\lambda$) by generation. Over 50 runs of the GA, $\lambda$ values were collected at every 
-fifth generation. Early generations are dominated by $\lambda \approx 1.0$ and $\lambda \approx 0.0$ indicating that most rules converged on all 
-\texttt{0}s or all \texttt{1}s, regardless of $\rho_0$. By generation XXXXXX, .... yadda yadda yadda.}
-\label{fig:histogram}
+\includegraphics[width=\textwidth]{figures/test_hist.eps}
+\caption{Frequency of different elite rules (as represented by $\lambda$) by generation, for 50 $r = 2$ runs. Generations 1 and 2 are biased towards $\lambda \approx 1.0$ and $\lambda \approx 0.0$ indicating that successful rules converged on all \texttt{0}s or all \texttt{1}s, regardless of $\rho_0$. By generation 15 
+successful rules are starting to cluster near $\lambda = 0.5$, a trend that continues to the final generation.}
+\label{fig:histogram_r2}
 \end{center}
-\end{figure}
+\end{figure*}
+\clearpage
+}
+
+\afterpage{%
+\begin{figure*}
+\begin{center}
+\includegraphics[width=\textwidth]{figures/histograms_r3.eps}
+\caption{Frequency of different elite rules (as represented by $\lambda$) by generation, for 50 $r = 3$ runs. Generations 1 and 2 are biased towards $\lambda \approx 1.0$ and $\lambda \approx 0.0$ indicating that successful rules converged on all \texttt{0}s or all \texttt{1}s, regardless of $\rho_0$. By generation 15 
+successful rules are starting to cluster near $\lambda = 0.5$, a trend that continues to the final generation.}
+\label{fig:histogram_r3}
+\end{center}
+\end{figure*}
+\clearpage
+}
 
 Finally, note that each location in the lattice has a transient period in which its state may continue to flip before finally stabilizing (if at all; see figure~\ref{fig:waterfall}). One way to quantify this period is to count the number of times a given location changes state 
 over the 200 iterations of a rule, given an initial condition. In order to visualize the relation between the length of a transient period and the fitness of a rule, 
@@ -123,7 +135,7 @@ rules are robust for approximately YYYY mutations, at which point fitness declin
 As noted above (figure~\ref{fig:histogram}), some of the earliest successful strategies to emerge are those that (i) go to all \texttt{1}s or all \texttt{0}s by default, 
 yet (ii) change their behavior for values of $\rho$ at the opposite extreme. For example, a rule may for the most part map every 
 neighborhood to \texttt{0}, except for neighborhoods with many \texttt{1}s, so an IC with a high enough value of $\rho$ will 
-`overwhelm' the default behavior of the rule. In such a rule, very IC with $\rho < 0.5$ is successfully classified, as are ICs with $\rho \approx 1.0$, but 
+`overwhelm' the default behavior of the rule. In such a rule, every IC with $\rho < 0.5$ is successfully classified, as are ICs with $\rho \approx 1.0$, but 
 errors are made on those with $\rho \gtrapprox 0.5$.
 
 Of course, the region around $\rho = 0.5$ is precisely the region we want to encourage the rules to deal with, yet under the fitness testing regime 
