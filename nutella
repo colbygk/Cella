@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Runs 50 rounds of the 50 generations of 50 population on 100 IC's with 300 iterations
+
+if [ $# -lt 2 ]; then
+  echo "Usage: nutella dir_rad2 dir_rad3"
+  echo "   dir_rad2 - directory to put radius 2 statistics"
+  echo "   dir_rad3 - directory to put radius 3 statistics"
+  exit
+fi
+
+rad2=$1
+rad3=$2
+
+mkdir -pv $rad2
+mkdir -pv $rad3
+
+for r in $( seq -w 1 50 )
+do
+ echo "$r - radius 2 ${rad2}/run${r}.log"
+ ./gella -r 2 -l ${rad2}/run${r}.log >& ${rad2}/run${r}.log 2>&1
+ echo "$r - radius 3 ${rad2}/run${r}.log"
+ ./gella -r 3 -l ${rad3}/run${r}.log >& ${rad3}/run${r}.log 2>&1
+done
+
+
