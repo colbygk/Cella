@@ -205,7 +205,7 @@ public class GA extends Loggable
         if ( mEliteRulesLogFile == null )
         {
           mEliteRulesLogFile = new BufferedWriter(
-              new FileWriter( "elite.rules." + mCALogFileName, false ) );
+              new FileWriter(  mCALogFileName + ".elite.rules.log", false ) );
         }
 
         StringBuffer sb = new StringBuffer();
@@ -234,7 +234,7 @@ public class GA extends Loggable
         if ( mFitLogFile == null )
         {
           mFitLogFile = new BufferedWriter(
-              new FileWriter( "fitness." + mCALogFileName, false ) );
+              new FileWriter( mCALogFileName + ".fitness.log", false ) );
         }
 
         StringBuffer sb = new StringBuffer();
@@ -264,7 +264,7 @@ public class GA extends Loggable
         if ( mICLogFile == null )
         {
           mICLogFile = new BufferedWriter(
-              new FileWriter( "elite.lambda." + mCALogFileName, false ) );
+              new FileWriter( mCALogFileName + ".ic.log", false ) );
         }
 
         StringBuffer sb = new StringBuffer();
@@ -294,7 +294,7 @@ public class GA extends Loggable
         if ( mCALogElitesFile == null )
         {
           mCALogElitesFile = new BufferedWriter(
-              new FileWriter( "elite.lambda." + mCALogFileName, false ) );
+              new FileWriter( mCALogFileName + ".elite.lambda.log", false ) );
         }
 
         StringBuffer sb = new StringBuffer();
@@ -325,7 +325,7 @@ public class GA extends Loggable
         if ( mCALogFile == null )
         {
           mCALogFile = new BufferedWriter(
-              new FileWriter( "all.lambda." + mCALogFileName, false ) );
+              new FileWriter( mCALogFileName + ".all.lambda.log", false ) );
         }
 
         StringBuffer sb = new StringBuffer();

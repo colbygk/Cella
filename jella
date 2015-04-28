@@ -26,8 +26,10 @@ import java.security.SecureRandom
 import java.lang.Thread
 
 $radii = 3
+$rule = ""
+$size = 750
 
-class Canvas < JPanel
+class CAcanvas < JPanel
 
   def paintComponent g
     self.drawCA g
@@ -35,25 +37,41 @@ class Canvas < JPanel
 
   def drawCA g
 
-    ca = CA.new( 750, $radii )
+    if ( $rule.length > 0 )
+      $radii = $rule.length / 8 
+    end
+    ca = CA.new( $size, $radii )
+    if ( $rule.length > 0 )
+      ca.setRule( $rule.to_java )
+      if ( $rule.length == 32 )
+        ca.setRadius( 2 )
+      elsif ( $rule.length == 128 )
+        ca.setRadius( 3 )
+      end
+    else
+      ca.setRule( 16, SecureRandom.new )
+    end
     ca.setStopIfStatic( true )
     ca.randomizedIC
-    ca.setRule( 16, SecureRandom.new )
     ca.buildRulesMap
 
     g.setColor Color.new 0, 0, 0
-    for y in (0..750)
+    bm = 0
+    ym = 1
+    if ( $size < 200 )
+      bm = 1
+      ym = 2
+    end
+    for y in (0..$size*ym).step(bm+1)
       ca.step
       x = 0
       ca.toString.each_char do |c|
         if c == "1"
-          g.fillRect( x, y, 1, 1 )
+          g.fillRect( x, y, 1+bm, 1+bm )
         end
-        x = x + 1
+        x = x + 1+bm
       end
     end
-
-
   end
 
 end
@@ -98,17 +116,21 @@ class Jella < JFrame
 
 
       cal = JLabel.new "Cellular Automata"
-      canvas = Canvas.new
-      canvas.setMinimumSize Dimension.new 750, 750
-      canvas.setMaximumSize Dimension.new 750, 750
-      canvas.setPreferredSize Dimension.new 750, 750
-      canvas.setBorder BorderFactory.createLineBorder Color.gray
+      c = CAcanvas.new
+      bm = 1
+      if ( $size < 200 )
+        bm = 2
+      end
+      c.setMinimumSize Dimension.new $size*bm, $size*bm
+      c.setMaximumSize Dimension.new $size*bm, $size*bm
+      c.setPreferredSize Dimension.new $size*bm, $size*bm
+      c.setBorder BorderFactory.createLineBorder Color.gray
       radiusButton = RadiusButton.new "Radius"
 
       sgh = layout.createSequentialGroup
       pg1 = layout.createParallelGroup
       pg1.addComponent cal
-      pg1.addComponent canvas
+      pg1.addComponent c
       pg1.addComponent radiusButton
       sgh.addGroup pg1
       layout.setHorizontalGroup sgh
@@ -116,7 +138,7 @@ class Jella < JFrame
       sgv = layout.createSequentialGroup
       pg2 = layout.createParallelGroup
       sgv.addComponent cal
-      sgv.addComponent canvas
+      sgv.addComponent c
       sgv.addComponent radiusButton
       sgv.addGroup pg2
       layout.setVerticalGroup sgv
@@ -132,10 +154,19 @@ class Jella < JFrame
 
 end
 
+if ARGV.length > 0
+  if /[[:digit:]]/ === ARGV[0]
+    $size = ARGV[0].to_i
+  end
+  if ARGV.length > 1
+    $rule = ARGV[1]
+  end
+end
+
 jella = Jella.new
 
 while true do
-  Thread.sleep 1
+  Thread.sleep 2000
   jella.repaint
 end
 
