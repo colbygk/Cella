@@ -49,16 +49,15 @@ of an epoch; other runs behaved differently, e.g., by performing very poorly for
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=\linewidth]{figures/max_mean_fitness_radius2.eps}
-\caption{Best and mean fitness for an $r = 2$ run by generation. The maximum fitness trajectory exhibits epochs: the population rapidly leaves epoch 1, flattens out until about generation 30, and then climbs again to another plateau. This phenomenon is washed out in the average fitness. Unsurprisingly, the standard 
-deviation (not shown) increases over time, because well-performing rules get better but 90\% of the population is always the result of crossover and mutation.}
+\includegraphics[width=\linewidth]{figures/max_epoch_radius2.eps}
+\caption{Best fitness for an $r = 2$ run by generation. The maximum fitness trajectory exhibits epochs: the population rapidly leaves epoch 1, flattens out until about generation 30, and then climbs again to another plateau.}
 \label{fig:r2_best_fit}
 \end{center}
 \end{figure}
 \begin{figure} [ht]
 \begin{center}
-\includegraphics[width=\linewidth]{figures/max_mean_fitness_radius3.eps}
-\caption{Best and mean fitness for an $r = 3$ run by generation. As in the case of $r = 2$ (fig.~\ref{fig:r2_best_fit}), the maximum trajectory exhibits epochs; in this case, there appear to be three plateaus.}
+\includegraphics[width=\linewidth]{figures/max_epoch_radius3.eps}
+\caption{Best fitness for an $r = 3$ run by generation. As in the case of $r = 2$ (fig.~\ref{fig:r2_best_fit}), the trajectory exhibits epochs; in this case, there appear to be three plateaus.}
 \label{fig:r3_best_fit}
 \end{center}
 \end{figure}
@@ -122,7 +121,7 @@ rules are robust for approximately YYYY mutations, at which point fitness declin
 As noted above (figure~\ref{fig:histogram}), some of the earliest successful strategies to emerge are those that (i) go to all \texttt{1}s or all \texttt{0}s by default, 
 yet (ii) change their behavior for values of $\rho$ at the opposite extreme. For example, a rule may for the most part map every 
 neighborhood to \texttt{0}, except for neighborhoods with many \texttt{1}s, so an IC with a high enough value of $\rho$ will 
-`overwhelm' the default behavior of the rule. In such a rule, very IC with $\rho < 0.5$ is successfully classified, as are ICs with $\rho \approx 1.0$, but 
+`overwhelm' the default behavior of the rule. In such a rule, every IC with $\rho < 0.5$ is successfully classified, as are ICs with $\rho \approx 1.0$, but 
 errors are made on those with $\rho \gtrapprox 0.5$.
 
 Of course, the region around $\rho = 0.5$ is precisely the region we want to encourage the rules to deal with, yet under the fitness testing regime 
