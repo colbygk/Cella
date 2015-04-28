@@ -25,17 +25,25 @@ public class CATest extends Loggable
   @Test
     public void test_lambda ()
     {
-      CA ca = new CA( 20, 2 );
       SecureRandom sr = new SecureRandom();
       int k = 1000;
 
       while ( k-- > 0 )
       {
-        ca.setRadius( sr.nextInt( 5 ) );
-        ca.randomizedRule();
+        CA ca = new CA( sr.nextInt( 300 )+1, sr.nextInt( 5 )+1 );
+        ca.randomizedRule( sr );
+        ca.randomizedIC( sr );
         assertTrue( ca.getLambda() <= 1.0 && ca.getLambda() >= 0.0 );
       }
       
+      k = 100;
+      CA ca = new CA( 121, 2 );
+      while ( k-- > 0 )
+      {
+        ca.randomizedRule( sr );
+        ca.randomizedIC( sr );
+        assertTrue( ca.getLambda() <= 1.0 && ca.getLambda() >= 0.0 );
+      }
     }
 
   @Test
@@ -49,7 +57,7 @@ public class CATest extends Loggable
       {
         ca = new CA( sr.nextInt( 300 )+1, sr.nextInt( 4 ) );
         ca.randomizedIC();
-        assertTrue( ca.get_rho0() <= 1.0 && ca.get_rho0() >= 0.0 );
+        assertTrue( ca.getRho0() <= 1.0 && ca.getRho0() >= 0.0 );
       }
     }
 
@@ -294,33 +302,42 @@ public class CATest extends Loggable
   @Test
     public void test_history ()
     {
-      CA ca = new CA( 10, 1 );
-      ca.setRule( 201 );
-      ca.buildRulesMap();
-      ca.setStopIfStatic( true );
 
-      List<byte[]> ICs = new ArrayList<byte[]>();
-      ICs.add( CA.randomizedIC( 10 ) );
-      ICs.add( CA.randomizedIC( 10 ) );
-      ICs.add( CA.randomizedIC( 10 ) );
-      ICs.add( CA.randomizedIC( 10 ) );
-      ICs.add( CA.randomizedIC( 10 ) );
+      CA ca = null;
+      int k = 100;
 
       ExecutorService es = Executors.newFixedThreadPool( 4 );
-      ca.iterateBackground( ICs, es );
 
-      for ( byte [] ic : ICs )
+      while ( k-- > 0 )
       {
-        assertTrue( ca.getHistory().mRho.get( ic ) != null );
-        float [] rhos = ca.getHistory().mRho.get( ic );
-        assertTrue( rhos.length == 2 );
-        ca.getHistory().mRho.remove( ic );
+        ca = new CA( 121, 2 );
+        ca.randomizedRule();
+        ca.buildRulesMap();
+        ca.setStopIfStatic( true );
 
-//        mDiary.info( "  k:" + (new String((byte[])p.getKey())) + " rho[0]:"
+        List<byte[]> ICs = new ArrayList<byte[]>();
+        for ( int j = 0; j < 25; j++ )
+          ICs.add( CA.randomizedIC( 121 ) );
+
+        ca.iterateBackground( ICs, es );
+
+        for ( byte [] ic : ICs )
+        {
+          assertTrue( ca.getLambda() <= 1.0 && ca.getLambda() >= 0.0 );
+          assertTrue( ca.getHistory().mRho.get( ic ) != null );
+          float [] rhos = ca.getHistory().mRho.get( ic );
+          assertTrue( rhos.length == 2 );
+          ca.getHistory().mRho.remove( ic );
+
+          //        mDiary.info( "  k:" + (new String((byte[])p.getKey())) + " rho[0]:"
 //        + rho[0] + " rho[1]:" + rho[1] );
+        }
+
+        assertTrue( ca.getHistory().mRho.isEmpty() );
+        ICs.clear();
       }
 
-      assertTrue( ca.getHistory().mRho.isEmpty() );
+      es.shutdown();
     }
 
   @Test

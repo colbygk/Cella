@@ -138,4 +138,32 @@ public class GATest extends Loggable
       assertTrue( ics != newics );
       assertTrue( ics.size() == newics.size() );
     }
+
+  @Test
+    public void test_ga_lambda ()
+    {
+      GA ga = new GA();
+      CA a, b, c;
+      int k = 500;
+      float l = 0.0f;
+
+      a = new CA( 121, 2 );
+      a.randomizedRule();
+      b = new CA( 121, 2 );
+      b.randomizedRule();
+      
+      while ( k-- > 0 )
+      {
+        c = ga.crossOver( a, b );
+        l = c.getLambda();
+        if ( l < 0.0 || l > 1.0 )
+        {
+          mDiary.info("");
+          mDiary.info(" wtf-> l:" + l );
+        }
+
+        assertTrue( c.getLambda() <= 1.0 && c.getLambda() >= 0.0 );
+      }
+    }
+
 }

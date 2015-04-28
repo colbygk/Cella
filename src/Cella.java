@@ -24,7 +24,13 @@ import java.nio.ByteBuffer;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Iterator;
+
+import java.io.FileWriter;
+import java.io.BufferedWriter;
+
 
 public class Cella extends Loggable
 {
@@ -33,6 +39,8 @@ public class Cella extends Loggable
   static PrintStream out = System.out;
 
   static final String MITCHELLOPTION = "m";
+  static final String GENLAMBDARANGEOPTION = "l";
+  static final String BITRULEOPTION = "b";
   static final String RADIUSOPTION = "r";
   static final String WIDTHOPTION = "w";
   static final String RANDOMIZEOPTION = "R";
@@ -41,7 +49,7 @@ public class Cella extends Loggable
   static final String STATICSTOPSOPTION = "S";
   static final String INITIALOPTION = "I";
   static final String HELPOPTION = "h";
-  static final String BENCHOPTION = "b";
+  static final String BENCHOPTION = "B";
   static final String PRINTRULESMAPOPTION = "M";
 
   private CA mySharona = null;
@@ -89,7 +97,9 @@ public class Cella extends Loggable
     Options o = new Options();
 
     o.addOption( MITCHELLOPTION, true, "Specify rule number (Mitchell Format)" );
+    o.addOption( BITRULEOPTION, true, "Specify a rule as a bit string e.g. 01010001011..." );
     o.addOption( RADIUSOPTION, true, "Specify radius" );
+    o.addOption( GENLAMBDARANGEOPTION, true, "Generation data for range of lambdas across rho's" );
     o.addOption( RANDOMIZEOPTION, false, "Randomize Initial String" );
     o.addOption( PRINTITEROPTION, false, "Print iterations" );
     o.addOption( ITERATIONSOPTION, true, "Number of iterations [200]" );
@@ -147,27 +157,39 @@ public class Cella extends Loggable
           mDiary.warn( "Initial string will be all zeros! Use either -I or -R" );
       }
 
+      boolean someRule = false;
       mDiary.trace5( "  Mitchell option" );
       if ( cl.hasOption( MITCHELLOPTION ) )
       {
         mySharona.setRule( new BigInteger( cl.getOptionValue( MITCHELLOPTION ) ).toByteArray() );
+        mySharona.buildRulesMap();
+        someRule = true;
       }
-      else
-      {
-        // Majority Rule, radius 1 is default
-        mySharona.setRule( BigInteger.valueOf( 23 ).toByteArray() );
-      }
-      sb.append( "%  rule:" + mySharona.ruleToString() + "/"
-          + new BigInteger( mySharona.getRule().toByteArray() ) + "\n");
 
+      String bStringRule = "";
+      mDiary.trace5( "   bit string option" );
+      if ( cl.hasOption( BITRULEOPTION ) )
+      {
+        bStringRule =  cl.getOptionValue( BITRULEOPTION );
+        mySharona.setRule( bStringRule );
+        someRule = true;
+      }
+
+      if ( someRule == false && cl.hasOption( BENCHOPTION ) == false )
+        throw new RuntimeException( "Must specify a rule with either -b or -m" );
+
+      sb.append( "%  rule:" + mySharona.ruleToString() + "\n" );
+
+      int radius = 1;
       mDiary.trace5( "   Radius option" );
       if ( cl.hasOption( RADIUSOPTION ) )
       {
-        mySharona.setRadius( Integer.valueOf( cl.getOptionValue( RADIUSOPTION ) ) );
+        radius = Integer.valueOf( cl.getOptionValue( RADIUSOPTION ) );
+        mySharona.setRadius( radius );
       }
       else
       {
-        mySharona.setRadius( 1 );
+        mySharona.setRadius( radius );
       }
       sb.append( "%  radius:" + mySharona.getRadius() + "\n" );
 
@@ -177,10 +199,12 @@ public class Cella extends Loggable
         mySharona.randomizedIC();
       }
 
+      int iterations = 200;
       mDiary.trace5( "   Iteration option" );
       if ( cl.hasOption( ITERATIONSOPTION ) )
       {
-        mySharona.setIterations( Integer.valueOf( cl.getOptionValue( ITERATIONSOPTION ) ) );
+        iterations = Integer.valueOf( cl.getOptionValue( ITERATIONSOPTION ) );
+        mySharona.setIterations( iterations );
       }
       sb.append( "%  iterations:" + mySharona.getIterations() + "\n" );
 
@@ -220,6 +244,62 @@ public class Cella extends Loggable
       {
       }
 
+      mDiary.trace5( "   Generate lambda data option" );
+      if ( cl.hasOption( GENLAMBDARANGEOPTION ) )
+      {
+        try
+        {
+          BufferedWriter bfw = new BufferedWriter(
+              new FileWriter(  cl.getOptionValue( GENLAMBDARANGEOPTION ), false ) );
+
+          SecureRandom sr = new SecureRandom();
+          List<byte[]> ics = new ArrayList<byte[]>();
+          int fitness = 0;
+          StringBuffer da = new StringBuffer();
+ 
+          mySharona = new CA( 121, radius );
+          mySharona.setIterations( iterations );
+          mySharona.setStopIfStatic( false );
+          mySharona.printEachIteration( false );
+          mySharona.setRadius( radius );
+          mySharona.setRule( bStringRule  );
+          mySharona.buildRulesMap();
+
+
+          int numRuns = 10;
+          int steps = 41;
+          double inc = 1.0/(double)(steps-1);
+          double target_rho = 0.0;
+          for ( int j = 0; j < steps; j++ )
+          {
+
+            for ( int k = 0; k < numRuns; k++ )
+            {
+              mySharona.setIC( CA.randomizedIC( sr, mySharona.getICWidth(), target_rho ) );
+              out.format( " rho: %1.3g ic: %s\n", target_rho, 
+                  CA.binaryBytesToString( mySharona.getIC() ) );
+              mySharona.iterate();
+              mySharona.getHistory().add_result( mySharona );
+              fitness += mySharona.fitness();
+              mySharona.resetFitness();
+            }
+
+            da.append(target_rho).append(" ").append((double)fitness/(double)numRuns).append("\n");
+            bfw.write( da.toString() );
+            bfw.flush();
+            da.setLength(0);
+            target_rho += inc;
+            fitness = 0;
+          }
+        }
+        catch ( IOException ioe )
+        {
+          mDiary.error( ioe.getMessage() );
+        }
+
+        System.exit(0);
+      }
+
       mDiary.trace5( "   bench option" );
       if ( cl.hasOption( BENCHOPTION ) )
       {
@@ -227,7 +307,7 @@ public class Cella extends Loggable
         int [] iters = new int[]{ 5000, 50000, 500000, 5000000 };
         long start, end;
         byte [] b = new byte[4];
-        int radius = mySharona.getRadius();
+        radius = mySharona.getRadius();
         int ni = 0;
 
         for ( int i : iters )
@@ -271,6 +351,8 @@ public class Cella extends Loggable
     catch ( Exception ex )
     {
       err.println( "Unexpected Exception: " + ex.getMessage() );
+      err.println( "Type: " + ex );
+      ex.printStackTrace();
     }
   }
 }

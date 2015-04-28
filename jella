@@ -28,6 +28,8 @@ import java.lang.Thread
 $radii = 3
 $rule = ""
 $size = 750
+$rb = nil
+$target_rho = 0.0;
 
 class CAcanvas < JPanel
 
@@ -37,22 +39,28 @@ class CAcanvas < JPanel
 
   def drawCA g
 
-    if ( $rule.length > 0 )
-      $radii = $rule.length / 8 
+    if ( $target_rho >= 1.0 )
+      $target_rho = 0.0;
+    else
+      $target_rho += 0.05;
     end
+
+    if ( $rule.length == 32 )
+      $radii = 2
+    elsif ( $rule.length == 128 )
+      $radii = 3
+    end
+
     ca = CA.new( $size, $radii )
+    ca.setStopIfStatic( true )
+    # ca.randomizedIC( $target_rho )
+    ca.randomizedIC
+
     if ( $rule.length > 0 )
       ca.setRule( $rule.to_java )
-      if ( $rule.length == 32 )
-        ca.setRadius( 2 )
-      elsif ( $rule.length == 128 )
-        ca.setRadius( 3 )
-      end
     else
       ca.setRule( 16, SecureRandom.new )
     end
-    ca.setStopIfStatic( true )
-    ca.randomizedIC
     ca.buildRulesMap
 
     g.setColor Color.new 0, 0, 0
@@ -62,6 +70,7 @@ class CAcanvas < JPanel
       bm = 1
       ym = 2
     end
+    p "rho0:#{ca.getRho0}"
     for y in (0..$size*ym).step(bm+1)
       ca.step
       x = 0
@@ -126,6 +135,7 @@ class Jella < JFrame
       c.setPreferredSize Dimension.new $size*bm, $size*bm
       c.setBorder BorderFactory.createLineBorder Color.gray
       radiusButton = RadiusButton.new "Radius"
+      $rb = radiusButton
 
       sgh = layout.createSequentialGroup
       pg1 = layout.createParallelGroup

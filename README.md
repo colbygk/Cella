@@ -3,11 +3,13 @@
 
 ### Authors: Whit Schonbein, Colby Gutierrez-Kraybill
 
-## Building
+## Building and Testing
 
     $ make
+    ...
+    $ make test
 
-Builds the jar file that is put together to be runnable.
+Builds the jars file that are put together to be runnable.
 
 ## Running
 

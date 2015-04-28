@@ -213,8 +213,9 @@ public class GA extends Loggable
         for ( int k = 0; k < GA.ELITE_NUM; k++ )
         {
           ca = mRules.get( k );
-          sb.append( ca.ruleToString() ).append("\n");
+          sb.append( ca.ruleToString() ).append(" ");
         }
+        sb.append("\n");
 
         mEliteRulesLogFile.write( sb.toString() );
       }
@@ -424,7 +425,7 @@ public class GA extends Loggable
 
     ca.setIterations( mIterations );
     // Radius determines rule width dimensions
-    ca.setRule( 16, s );
+    ca.randomizedRule( s );
     ca.buildRulesMap();
     ca.setStopIfStatic( true );
 
@@ -484,6 +485,7 @@ public class GA extends Loggable
       Collections.sort( mRules );
 
       logFitPop();
+      logEliteRules();
 
       mMidRules = mOldRules;
       mOldRules = mRules;
@@ -504,14 +506,18 @@ public class GA extends Loggable
       CA ca1, ca2, ca3;
       for ( int k = GA.ELITE_NUM; k < mOldRules.size(); k++ )
       {
+        // Pick two random pairings from the old set of rules
         w = mOldRules.get( mSR.nextInt( mOldRules.size() ) );
         x = mOldRules.get( mSR.nextInt( mOldRules.size() ) );
         y = mOldRules.get( mSR.nextInt( mOldRules.size() ) );
         z = mOldRules.get( mSR.nextInt( mOldRules.size() ) );
 
+        // Tournament selection between the pairings
         ca1 = ( w.fitness() > x.fitness() ? w : x );
         ca2 = ( y.fitness() > z.fitness() ? y : z );
         ca3 = crossOver( ca1, ca2 );
+
+        // Select a random number of bits to mutate between 0% - 10%
         mutate( ca3, mSR, (int)(ca3.getRuleWidthInBits()*mSR.nextDouble()*0.10), false );
 
         mRules.add( ca3 );
@@ -536,7 +542,6 @@ public class GA extends Loggable
 
     long end = System.nanoTime();
 
-    logEliteRules();
     closeLogs();
 
     out.println( String.format( " %07d iters %10.0f iter/sec (%3.2f s)",

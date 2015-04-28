@@ -104,11 +104,11 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
   public CAHistory getHistory() { return mCAHistory; }
 
   private float mRho0 = 0.0f;
-  public float get_rho0() { return mRho0; }
-  public void set_rho0( float r ) { mRho0 = r; }
+  public float getRho0() { return mRho0; }
+  public void setRho0( float r ) { mRho0 = r; }
   private float mRho = 0.0f;
-  public float get_rho() { return mRho; }
-  public void set_rho( float r ) { mRho = r; }
+  public float getRho() { return mRho; }
+  public void setRho( float r ) { mRho = r; }
 
   PrintStream out = System.out;
 
@@ -403,6 +403,11 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
   }
   public byte [] getIC () { return mIC; }
 
+  public void randomizedIC ( SecureRandom sr )
+  {
+    setIC( randomizedIC( sr, mICWidth ) );
+  }
+
   public void randomizedIC ()
   {
     setIC( randomizedIC( new SecureRandom(), mICWidth ) );
@@ -413,10 +418,16 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
     return randomizedIC( new SecureRandom(), width );
   }
 
-  public static byte [] randomizedIC ( SecureRandom r, int width )
+  public byte [] randomizedIC ( double target_rho )
+  {
+    SecureRandom sr = new SecureRandom();
+
+    return randomizedIC( sr, mICWidth, target_rho );
+  }
+
+  public static byte [] randomizedIC ( SecureRandom r, int width, double target_rho )
   {
     byte b[] = new byte[ width ];
-    double target_rho = r.nextDouble();
 
     for ( int k = 0; k < width; k++ )
     {
@@ -425,6 +436,13 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
       else
         b[k] = (byte)48;
     }
+
+    return b;
+  }
+
+  public static byte [] randomizedIC ( SecureRandom r, int width )
+  {
+    double target_rho = r.nextDouble();
 
     /*
     byte b[] = new byte[ width ];
@@ -443,7 +461,7 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
     }
     */
 
-    return b;
+    return randomizedIC( r, width, target_rho );
   }
 
   public CA call ()

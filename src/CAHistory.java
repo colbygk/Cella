@@ -53,8 +53,8 @@ class CAHistory extends Loggable
   public synchronized void add_result ( CA ca )
   {
     float [] rhos = new float[2];
-    rhos[0] = ca.get_rho0();
-    rhos[1] = ca.get_rho();
+    rhos[0] = ca.getRho0();
+    rhos[1] = ca.getRho();
 
     mRho.put( ca.getIC0(), rhos );
 
