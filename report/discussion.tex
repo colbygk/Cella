@@ -5,39 +5,17 @@ conclusions.
 
 \subsection{On the difference between radius 2 and 3}
 
-The size of the search space depends on the radius of a rule. With $r = 2$, the number of possible rules is $2^{32}$, while 
-with $r = 3$, the size increases to $2^{128}$, which is to say that the search space for the latter is much larger than that of 
-the former. Consequently, we might expect that the $r = 3$ case to do worse than $r = 2$ simply because it the search is more difficult 
-(assuming the number of successful solutions is approximately the same across both). 
-
-However, it is also the case that the $r = 3$ case has more information to work with in deciding which state to transition to: 7 bits rather than 
-5. During development we occasionally ran our GA for $r = 1$, and noticed that $r = 1$ tended to do worse than $r = 2$, suggesting that 
-the increase in information access more than makes up for the larger search space. Consequently, we might also expect $r = 3$ to do 
-better than $r = 2$.
+As noted above, the size of the search space grows with the radius of a rule ($2^{32}$ for $r = 2$, and $2^{128}$ for $r = 3$), suggesting 
+that searches may be more difficult for CAs with larger neighborhoods. However, a larger radius also means that the CA has more information 
+to work with in deciding which state to transition to, suggesting that finding a solution may be easier for larger radii CAs despite the increased 
+search size.
 
 Figures~\ref{fig:r2_rho} -~\ref{fig:r3_best_fit} show that ??????????
 
-An observation that is common to both cases is that they exhibit the various characteristics of information processing in living systems identified 
-by Mitchell \cite{mitchell_complexity:_2009}. Specifically:
-\begin{enumerate*}
-	\item \textit{Sampling}: Rather than the search being guided by some sort of 'central controller', the population \textit{samples} possible 
-	solutions. Promising results are communicated through the population not by direct transmission through some entity 'in the know', but rather 
-	by selection via fitness (which itself involves sampling the population of CAs).
-	\item \textit{Stochastic Behavior}: Randomness is essential to the success of the GA: The initial sampling of possible solutions is stochastic, the 
-	selection of CAs that contribute to the next generation has a stochastic component, and the testing sets are regenerated randomly at each 
-	generation. If we removed the randomness - e.g., by making the IC test sets include only $rho_0 \approx 0.5$ cases, or by using the 
-	same test set on every generation - then it is obvious the search would fail to find a solution, or fail to find a general solution. 
-	\item \textit{Terraced Search}: Like living systems, the GA searches at different levels of detail. The initial population of CAs is a small, 
-	coarse sampling from the entire search space. The fitness of a CA is an estimate of the potential of rules from that region of the solution space, 
-	and by creating a new generation on the basis of fitness, the search is directed towards that region, and it is explored in more detail. Furthermore, 
-	this happens for multiple regions simultaneously.
-	\item \textit{Exploration and Exploitation}: The pattern of getting an estimate for a region and then focusing the search on promising regions 
-	is one of \textit{exploration} followed by \textit{exploitation}: Promising solutions are quickly identified, and then the discovery is 
-	exploited by focusing search on those solutions.
-\end{enumerate*}
-Given the affinity between the CA experiment and the Mitchell's features of information processing in living systems, a potentially interesting future 
-direction might be to consider the terraced search and exploitation in more detail, e.g., by considering which regions of solution space are explored, 
-how fine-grained the exploitation becomes, and on. Unfortunately, we did not have time to pursue this in the present paper.
+As noted above, an early strategy for increasing fitness is simply to go to $\rho_n = 0.0$ or $\rho_n = 1.0$. An interesting outcome for both 
+cases was the presence of fit rules that adopted a different version of the same sort of 'gambling' strategy: Go to $\rho_n = 0.0$ or 
+$\rho = 1.0$ but instead of entering a stable state, oscillate between the two. Whether the classification is evaluated as correct then 
+depends on which global state the CA happens to be in after 200 iterations.
 
 \subsection{On mutational robustness}
 
