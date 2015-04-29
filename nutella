@@ -10,17 +10,22 @@ if [ $# -lt 2 ]; then
 fi
 
 rad2=$1
-rad3=$2
+shift
+rad3=$1
+shift
+remaining=$*
 
 mkdir -pv $rad2
 mkdir -pv $rad3
 
 for r in $( seq -w 1 50 )
 do
- echo "$r - radius 2 ${rad2}/run${r}.log"
- ./gella -r 2 -l ${rad2}/run${r}.log >& ${rad2}/run${r}.log 2>&1
- echo "$r - radius 3 ${rad2}/run${r}.log"
- ./gella -r 3 -l ${rad3}/run${r}.log >& ${rad3}/run${r}.log 2>&1
+  echo "$r - radius 2 ${rad2}/run${r}.log"
+  echo "% Invoked: ./gella ${remaining} -r 2 -l ${rad2}/run${r} >& ${rad2}/run${r}.log" > ${rad2}/run${r}.log
+  ./gella ${remaining} -r 2 -l ${rad2}/run${r} >> ${rad2}/run${r}.log 2>&1
+  echo "$r - radius 3 ${rad2}/run${r}.log"
+  echo "% Invoked: ./gella ${remaining} -r 3 -l ${rad3}/run${r} >& ${rad3}/run${r}.log" > ${rad3}/run${r}.log 
+  ./gella ${remaining} -r 3 -l ${rad3}/run${r} >> ${rad3}/run${r}.log 2>&1
 done
 
 
