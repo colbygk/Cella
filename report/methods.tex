@@ -14,16 +14,16 @@ the CA had settled into a steady state for that IC).
 
 For the results reported in section~\ref{sec:2_1}, we used the fitness function given in equation~\ref{eq:fitness_1}, where 
 $\Delta_{fitness}$ is the change in fitness for a CA, and $\rho_n$ is the iteration at which the CA stopped ($n \leq 300$). This fitness 
-function is very simple: Given an IC, the fitness for a CA is increased by 1.0 if and only if it settles to all \texttt{1}s when $\rho_0 > 0.5$ or 
+function is very simple: Given an IC, the fitness for a CA is increased by 1 if and only if it settles to all \texttt{1}s when $\rho_0 > 0.5$ or 
 settles to all \texttt{0}s when $\rho_0 < 0.5$.
 \begin{equation} \label{eq:fitness_1}
   \Delta_{fitness} =
   \begin{cases}
-    1.0 & \text{if } \rho_0 < 0.5 \text{ \& } \rho_n = 0.0,
+    1 & \text{if } \rho_0 < 0.5 \text{ \& } \rho_n = 0.0,
     \\
-    1.0 & \text{if } \rho_0 > 0.5 \text{ \& } \rho_n = 1.0,
+    1 & \text{if } \rho_0 > 0.5 \text{ \& } \rho_n = 1.0,
    \\
-    0.0 & \text{otherwise}.
+    0 & \text{otherwise}.
   \end{cases}
 \end{equation}
 With fitness function (\ref{eq:fitness_1}), the maximum fitness for a CA during its lifetime is 100, and the minimum is 0. Note that fitness 
@@ -35,11 +35,11 @@ increased (equation~\ref{eq:fitness_2}).
 \begin{equation} \label{eq:fitness_2}
   \Delta_{fitness} =
   \begin{cases}
-    1.0 + g*(\frac{1}{|\rho - 0.5| * 50}) & \text{if } \rho_0 < 0.5 \text{ \& } \rho_n = 0.0,
+    1 + g\left(\frac{1}{|\rho - 0.5| 50}\right) & \text{if } \rho_0 < 0.5 \text{ \& } \rho_n = 0.0,
     \\
-    1.0 + g*(\frac{1}{|\rho - 0.5| * 50})& \text{if } \rho_0 > 0.5 \text{ \& } \rho_n = 1.0,
+    1 + g\left(\frac{1}{|\rho - 0.5| 50}\right)& \text{if } \rho_0 > 0.5 \text{ \& } \rho_n = 1.0,
    \\
-    0.0 & \text{otherwise}.
+    0 & \text{otherwise}.
   \end{cases}
 \end{equation}
 In (\ref{eq:fitness_2}), $g$ is the current generation number, and 50 is a scaling term.
