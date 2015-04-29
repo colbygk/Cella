@@ -1,0 +1,83 @@
+#!/usr/bin/env jruby
+
+#
+# CS523 Project 2 - Sprint 2015
+#
+# Colby & Whit
+# 
+# This jruby script takes a rule and applies mutations to it
+# generating fitness data.  After each mutation it
+# performs 10000 ICs (random across rho_o \in [0.0 1.0]) tests
+# with 300 iterations each
+#
+
+$CLASSPATH << "lib/cs523-project2-cella.jar"
+
+include Java
+
+import 'cs523.project2.CA'
+import 'cs523.project2.GA'
+import 'java.security.SecureRandom'
+import 'java.util.concurrent.ExecutorService'
+import 'java.util.concurrent.Executors'
+import 'java.util.concurrent.Executors'
+
+
+
+begin
+  abort "Usage: rubella <rule string> <output data file>" unless ARGV.length == 2
+
+  elite = ARGV[0]
+  filename = ARGV[1]
+  of = File.open filename, 'w'
+
+  radius = ( elite.length == 32 ? 2 : 3 ); # Make assumption
+
+  ga = GA.new
+  es = Executors.newFixedThreadPool 4
+  sr = SecureRandom.new
+
+  original = CA.new 121, radius
+  original.setRule( elite.to_java )
+
+  50.times do |m|
+    pool = []
+    ics = []
+
+    print " #{m} - ICs "
+    10000.times do
+      ics << CA.randomizedIC( 121.to_java(:int) )
+      # print "#{CA.initialConditionToString ics[-1]}\n"
+    end
+
+    of.write "%2d " % m
+
+    print "runs "
+    100.times do |i|
+      ca = CA.new 121, radius
+      ca.setRule( elite.to_java )
+      ca.setIterations 10
+      ca.setStopIfStatic true
+      ca.setBias false
+      ga.mutate ca, sr, m, true
+      ca.buildRulesMap
+
+      print "\u2620 " if i % 10 == 0
+      of.write "#{ca.iterateBackground ics, es} "
+    end
+
+    of.write "\n"
+
+    print "done\n"
+
+  end
+
+  of.flush
+  of.close
+
+  es.shutdown
+
+rescue Exception => ex
+  puts ex.message
+  puts ex.backtrace
+end
