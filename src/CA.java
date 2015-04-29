@@ -96,6 +96,7 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
   public byte[] getIC0() { return mIC0; }
   private byte[] mMidIC = null;
   private byte[] mICcopy = null;
+  private int[] mTransient = null;
 
   Map<Neighborhood, byte[]> mRules = null;
 
@@ -143,6 +144,7 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
     setRadius( r );
     mIC = new byte[ mICWidth ];
     mMidIC = new byte[ mICWidth ];
+    mTransient = new int[ mICWidth ];
 
 
     // Defaults to 100
@@ -161,6 +163,7 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
     setRadius( ca.getRadius() );
     mIC = new byte[ mICWidth ];
     mMidIC = new byte[ mICWidth ];
+    mTransient = new int[ mICWidth ];
   }
 
   public void randomizedRule ()
@@ -358,12 +361,29 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
       mMidIC[l] = mRules.get( mCachedHood )[0];
 
       if ( mMidIC[l] != mIC[l] )
+      {
+        mTransient[l]++;
         mChangedLastStep = true;
+      }
     }
 
     mICcopy = mIC;
     mIC = mMidIC;
     mMidIC = mICcopy;
+  }
+
+  public int[] getTransientCounts ()
+  {
+    return mTransient;
+  }
+
+  public void resetTransients ()
+  {
+    mCAHistory.resetTransients();
+
+    // Reset transient counts
+    for ( int k = 0; k < mICWidth; k++ )
+      mTransient[k] = 0;
   }
 
   public int iterate ()
@@ -398,6 +418,8 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
 
     mRho = CAHistory.compute_rho( mIC );
 
+    mCAHistory.add_result( this );
+
     return ( i-j );
   }
 
@@ -419,6 +441,7 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
     mIC0 = ic;
     mRho0 = CAHistory.compute_rho( mIC0 );
     mCAHistory.add_rho0( mIC0 ); // needed?
+    mTransient = new int[ ic.length ];
     mICready = true;
   }
   public byte [] getIC () { return mIC; }

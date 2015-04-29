@@ -1,5 +1,14 @@
 \begin{abstract}
 
-This is an abstract.
-
+A cellular automaton (CA) is an \textit{N}-dimensional lattice, where each location in the lattice can be in one of \textit{k} possible states. 
+At each time step, the state of each location is updated according to a rule that maps a surrounding neighborhood to 
+a new state for that location. Despite their simplicity, CAs can solve non-trivial problems. In this paper we investigate the capacity of 
+1-dimensional CAs to solve the `$\rho = \frac{1}{2}$' problem, i.e., the problem of taking an initial binary string and iteratively updating 
+its states so that the final outcome correctly classifies the density of \texttt{1}s in the initial string: If the string has more \texttt{1}s than 
+\texttt{0}s, the final lattice should be all \texttt{1}s, and should be all \texttt{0}s otherwise. A genetic algorithm with mutation and crossover 
+is used to search for solutions. We show that (i) CA that have access to more information regarding the string they are classifying perform 
+better than those with less information despite having a larger space of possible solutions, and (ii) well-performing CA exhibit `mutational 
+robustness' in the sense that the CA continues to perform well despite random mutations. Finally, we modify the genetic algorithm to utilize a dynamic fitness 
+function that gradually encourages it to search for solutions to harder initial strings and discourages it from relying on previously found 
+solutions; We show that this `biased fitness' approach leads to better-preforming solutions in comparison to the unbiased version.
 \end{abstract}

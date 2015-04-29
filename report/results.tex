@@ -2,14 +2,13 @@
 
 For the results reported here, the CA population is 100, selection is tournament with elitism, offspring CA populations are created with both 
 mutation and crossover, the IC length is 121, the size of the IC test set is 100, and CAs are run for a maximum of 
-300 iterations per IC over 50 generations. When rules are referred to using decimal notation, the encoding follows Mitchell 
-\cite{Mitchell:1994:ECA:186092.186116}. See section \ref{sec:methods} 
+300 iterations per IC over 50 generations. See section \ref{sec:methods} 
 for more information regarding methods.
 
 \subsection{Comparing neighborhoods} \label{sec:2_1}
 Our first goal was to compare rules with different neighborhoods. In particular, there is a tradeoff between the size of the search space and the 
-the amount of information available for purposes of setting a location state. Larger neighborhoods have rules that can 'see' more of the source IC, and 
-hence (intuitively) make a more informed decision about how to set the output bit, but this comes at a cost of increasing the size of the search space by multiple 
+the amount of information available for purposes of setting a location state. Larger neighborhoods have rules that can `see' more of the source IC, and 
+hence make a more informed decision about how to set the output bit, but this comes at a cost of increasing the size of the search space by multiple 
 orders of magnitude ($2^{32}$ vs. $2^{128}$).
 
 Figures~\ref{fig:waterfall_1} and \ref{fig:waterfall_2} show two typical CA runs. The first is an example of a rule that does not converge, while the second 
@@ -32,7 +31,7 @@ result applying the rule to the row above it.}
 \end{center}
 \end{figure}
 
-After running the GA for 50 runs, for both $r = 2$ and $r = 3$, we evaluated the elite rules from the final generation of each case against a test set of 10k ICs, and ranked them by their fitness score. Figure~\ref{fig:r2_r3_rho} plots the performance of the best performing $r = 2$ and $r = 3$ rule. As the figure shows, 
+After running the GA for 50 runs, for both $r = 2$ and $r = 3$, we evaluated the elite rules from the final generation of every run against a test set of 10k ICs, and ranked them by their fitness score. Figure~\ref{fig:r2_r3_rho} plots the performance of the best performing $r = 2$ and $r = 3$ rules. As the figure shows, 
 the best $r = 3$ outperforms the best $r = 2$ rule.
 
 \begin{figure}
@@ -64,8 +63,9 @@ best fitness, where these increases represent the discovery of new, dominant str
 \end{center}
 \end{figure}
 
-Let $\lambda$ be the proportion of \texttt{1}s in the binary representation of a rule (section~\ref{sec:methods}). Then the transitions just described are 
-equivalent to shifting from rules with $\lambda = 0$ or $\lambda = 1$ to rules with $\lambda \approx \frac{1}{2}$. This transition is depicted in 
+Let $\lambda$ be the proportion of \texttt{1}s in the binary representation of a rule \cite{Mitchell:1994:ECA:186092.186116}. Then the transitions 
+just described are equivalent to shifting from rules with $\lambda \approx 0$ or $\lambda \approx 1$ to rules with $\lambda \approx \frac{1}{2}$. 
+This transition is depicted in 
 figures~\ref{fig:histogram_r2} and~\ref{fig:histogram_r3}, for $r = 2$ and $r = 3$ runs, respectively.
 
 \afterpage{%
@@ -114,22 +114,25 @@ genome to move to a very different region of search space by accruing changes ov
 having to cross low-fitness boundaries.
 
 If our CAs are mutationally robust, then the nearby neighbors of elite rules should themselves perform well. To assess whether 
-this is the case, we selected XXXX elite rules from both the $r = 2$ and $r = 3$ runs, and randomly mutated each \textit{x} times, for $x = 1,2,3, ... 7$. 
-For each \textit{x}, we tested the resulting rules against a set of ICs and recorded the fitness. The results are given in figure~\ref{fig:robustness}.
+this is the case, we tested the 500 elite $r = 3$ rules from generation 50 against 10k ICs, and selected the best performing rule. 
+We then generated 50 sets of 100 mutated rules each from this source rule, with the first set containing mutants with a Hamming distance from the 
+source of 1, the second a distance of 2, and so on. The fitness of each mutant was evaluated against 10k ICs; results are given in 
+figure~\ref{fig:robustness}.
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=\linewidth]{foo.png}
-\caption{Testing for the mutational robustness of elite rules. XXXX elite rules from $r = 2$ and $r = 3$ GA runs were chosen and randomly mutated 1, 2, ... 7 
-times. After each mutation, the resulting rules were tested against the same set of ICs, and the fitness recorded. As can be seen in the figure, 
-rules are robust for approximately YYYY mutations, at which point fitness declines.}
+\includegraphics[width=\linewidth]{figures/mutational_robustness.eps}
+\caption{Mutational robustness of the best performing $r = 3$ rule for 0 to 50 mutations. 100 unique variations of the 
+original rule are generated with $m$ mutations, and each is evaluated over 10k randomly generated ICs. Mean fitness decreases 
+rapidly, but high fitness rules are still present, as indicated by the max fitness values. Within a Hamming distance of $\approx 10$, maximum performance 
+actually increases in comparison with the source rule. }
 \label{fig:robustness}
 \end{center}
 \end{figure}
 
-\subsection{In search of a better CA} \label{sec:2_3}
+\subsection{In search of a better CA: Biased fitness} \label{sec:2_3}
 
-As noted above (figure~\ref{fig:histogram}), some of the earliest successful strategies to emerge are those that (i) go to all \texttt{1}s or all \texttt{0}s by default, 
+As noted above, some of the earliest successful strategies to emerge are those that (i) go to all \texttt{1}s or all \texttt{0}s by default, 
 yet (ii) change their behavior for values of $\rho$ at the opposite extreme. For example, a rule may for the most part map every 
 neighborhood to \texttt{0}, except for neighborhoods with many \texttt{1}s, so an IC with a high enough value of $\rho$ will 
 `overwhelm' the default behavior of the rule. In such a rule, every IC with $\rho < 0.5$ is successfully classified, as are ICs with $\rho \approx 1.0$, but 
@@ -142,15 +145,21 @@ utility is exhausted.
 
 To address this issue, we modified the GA so that the fitness gain for successfully classifying ICs is a function of its distance from $\rho = 0.5$: The 
 closer to 0.5, the more a correct classification is worth. Furthermore, this function is adjusted depending on the current generation, so that at generation 1 
-all ICs are worth the same amount of fitness regardless of their distance from $\rho = 0.5$, and the distance becomes increasingly more important as 
-the generations progress.
+all ICs are worth the same amount of fitness regardless of their distance from $\rho = 0.5$, and the distance becomes increasingly important as 
+the generations progress (see section~\ref{sec:methods}).
+
+We ran 50 runs of the `biased fitness' GA, each for 50 generations, for both $r = 2$ and $r = 3$ cases. Best fitness by generation looks similar to that 
+of the unbiased runs reported in section~\ref{sec:2_1}, so we do not give an example here. To find the best performing elite rule after the 
+50th generation, we tested each elite rule from each run on a test set of 10k ICs. Figure~\ref{fig:r2_r3_rho_biased} shows the performance 
+of the winning biased $r = 2$ and $r = 3$ rules when tested against 1000 ICs for each $0.0 \leq \rho \leq 1.0$ at 0.025 intervals; for purposes of 
+comparison, the figure includes the plots from figure~\ref{fig:r2_r3_rho} as well.
 
 \begin{figure}
 \begin{center}
 \includegraphics[width=\linewidth]{figures/lambda_biased_correctness_plot.eps}
-\caption{The best performing elite rule from 50 runs of our `biased-fitness' GA, plotted against the same $r = 2$ and $r = 3$ rules from 
+\caption{The best performing elite rule from 50 runs of our `biased fitness' GA, for both $r = 2$ and $r = 3$, plotted against the counterpart rules from 
 figure~\ref{fig:r2_r3_rho}.}
-\label{fig:r2_r3_rho}
+\label{fig:r2_r3_rho_biased}
 \end{center}
 \end{figure}
 

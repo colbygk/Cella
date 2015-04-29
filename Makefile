@@ -51,5 +51,11 @@ build_jars: java_reflection_sources java_sources
 test: java_reflection_sources java_sources
 	$(RUN_JAVA_TESTS)
 	
+pdf: report/project2.tex
+	cd report && pdflatex project2.tex
+	cd report && pdflatex project2.tex
+	cd report && pdflatex project2.tex
+	cd report && open project2.pdf
+
 clean:
 	rm -rf $(JAVA_CLASSES) $(JAVA_REFLECTION_CLASSES) $(LIB_DIR)/$(JAR_CELLA_NAME) $(LIB_DIR)/$(JAR_GELLA_NAME) $(LIB_DIR)/$(JAR_CLASSES_NAME)
