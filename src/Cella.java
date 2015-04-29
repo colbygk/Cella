@@ -181,12 +181,11 @@ public class Cella extends Loggable
         bStringRule =  cl.getOptionValue( BITRULEOPTION );
         mySharona.setRule( bStringRule );
         someRule = true;
+        sb.append( "%  rule:" + mySharona.ruleToString() + "\n" );
       }
 
       if ( someRule == false && cl.hasOption( BENCHOPTION ) == false )
         throw new RuntimeException( "Must specify a rule with either -b or -m" );
-
-      sb.append( "%  rule:" + mySharona.ruleToString() + "\n" );
 
       int radius = 1;
       mDiary.trace5( "   Radius option" );
