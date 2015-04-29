@@ -61,6 +61,21 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
   public int getICWidth() { return mICWidth; }
   public int getRuleWidthInBits() { return mRuleWidthBits; }
 
+  private boolean mUseBias = false;
+  public boolean useBias() { return mUseBias; }
+  public void setBias( boolean b )
+  {
+    mUseBias = b;
+    if ( mCAHistory != null )
+      mCAHistory.setBias( b );
+  }
+
+  public void setGeneration( int g )
+  {
+    if ( mCAHistory != null )
+      mCAHistory.setGeneration( g );
+  }
+
   private float mLowerBound = 0.0f;
   private float mUpperBound = 1.0f;
 

@@ -368,4 +368,40 @@ public class CATest extends Loggable
       assertTrue( al.get(3) == c2 );
     }
 
+  @Test
+    public void test_bias_fitness ()
+    {
+      CA ca = new CA( 121, 2 );
+      CA cb = new CA( 121, 2 );
+
+      ca.randomizedRule();
+      ca.setStopIfStatic( true );
+
+      List<byte[]> ICs = new ArrayList<byte[]>();
+      ExecutorService es = Executors.newFixedThreadPool( 4 );
+
+      int f1 = 0, f2 = 0;
+      while ( f1 == 0 )
+      {
+        for ( int j = 0; j < 100; j++ )
+          ICs.add( CA.randomizedIC( 121 ) ); 
+
+        cb.setBias( false );
+        cb.setGeneration( 25 );
+        cb.setRule( ca.getRule() );
+        cb.buildRulesMap();
+
+        f1 = cb.iterateBackground( ICs, es );
+
+        cb.resetFitness();
+        cb.setBias( true );
+        f2 = cb.iterateBackground( ICs, es );
+      }
+
+
+      assertTrue( f1 != f2 );
+
+      es.shutdown();
+    }
+
 }

@@ -16,6 +16,17 @@ class CAHistory extends Loggable
   public float mUpperBound = 1.0f;
   public int totalIterations = 0;
 
+  private boolean mUseBias = false;
+  public boolean useBias() { return mUseBias; }
+  public void setBias( boolean b )
+  {
+    mUseBias = b;
+  }
+
+  private int mGeneration = 0;
+  public void setGeneration( int g ) { mGeneration = g; }
+
+
   public CAHistory ( float l, float u )
   {
     mDiary = getDiary();
@@ -59,9 +70,19 @@ class CAHistory extends Loggable
     mRho.put( ca.getIC0(), rhos );
 
     if ( rhos[0] > 0.5 && rhos[1] > mUpperBound )
-      fitness++;
+    {
+      if ( mUseBias )
+        fitness += (1 + (int)(mGeneration * (1.0/(Math.abs( ca.getRho0() - 0.5)*50.0))));
+      else
+        fitness++;
+    }
     else if ( rhos[0] <= 0.5 && rhos[1] < mLowerBound )
-      fitness++;
+    {
+      if ( mUseBias )
+        fitness += (1 + (int)(mGeneration * (1.0/(Math.abs( ca.getRho0() - 0.5)*50.0))));
+      else
+        fitness++;
+    }
 
     totalIterations += ca.numActualIterations();
 

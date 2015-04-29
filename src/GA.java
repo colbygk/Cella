@@ -65,6 +65,10 @@ public class GA extends Loggable
 
   private SecureRandom mSR = null;
 
+  private boolean mUseBias = false;
+  public boolean useBias() { return mUseBias; }
+  public void setBias( boolean b ) { mUseBias = b; }
+
   PrintStream out = System.out;
 
   public GA ()
@@ -423,6 +427,7 @@ public class GA extends Loggable
   {
     CA ca = new CA( mICWidth, mRadius );
 
+    ca.setBias( mUseBias );
     ca.setIterations( mIterations );
     // Radius determines rule width dimensions
     ca.randomizedRule( s );

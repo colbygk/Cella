@@ -42,6 +42,7 @@ public class Gella extends Loggable
   static final String ICOPTION = "c";
   static final String CALOGOPTION = "l";
   static final String GENERATIONSOPTION = "g";
+  static final String USEBIASOPTION = "d";
 
   private int mICWidth = 0;
   private int mRadius = 0;
@@ -54,6 +55,8 @@ public class Gella extends Loggable
   private GA mySharona = null;
 
   private String mCALogFileName = null;
+
+  private boolean mUseBias = false;
 
   protected Gella() 
   {
@@ -93,6 +96,8 @@ public class Gella extends Loggable
 
     GA ga = new GA( mPop, mICCount, mICWidth, mRadius, mIterations, mGenerations );
 
+    ga.setBias( mUseBias );
+
     if ( mCALogFileName != null )
       ga.setCALogFileName( mCALogFileName );
 
@@ -113,6 +118,7 @@ public class Gella extends Loggable
         CA.MAX_WORKERS );
     o.addOption( POPOPTION, true, "Set population of CA's" );
     o.addOption( GENERATIONSOPTION, true, "Set number of generations to run" );
+    o.addOption( USEBIASOPTION, false, "Use biasing fitness function g*(1/(|rho_0-0.5|*50))" );
     o.addOption( ICOPTION, true, "Set number of Initial Conditions to use" );
     o.addOption( CALOGOPTION, true, "Log lambda on each generation to specified filename and elite rule lambdas" );
 
@@ -209,6 +215,17 @@ public class Gella extends Loggable
         mIterations = GA.getDefaultIterations();
       }
       sb.append( "%  iterations:" + mIterations + "\n" );
+
+      mDiary.trace5( "   Use Bias option" );
+      if ( cl.hasOption( USEBIASOPTION ) )
+      {
+        mUseBias = true;
+      }
+      else
+      {
+        mUseBias = false;
+      }
+      sb.append( "%  use bias:" + mUseBias + "\n" );
 
       mDiary.trace5( "   Generations option" );
       if ( cl.hasOption( GENERATIONSOPTION ) )

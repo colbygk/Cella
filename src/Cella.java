@@ -75,7 +75,7 @@ public class Cella extends Loggable
     }
     catch ( URISyntaxException urise )
     {
-      mDiary.warn( "Unable to get version information: " + urise );
+      // mDiary.warn( "Unable to get version information: " + urise );
     }
     catch ( IOException ioe )
     {
@@ -153,7 +153,7 @@ public class Cella extends Loggable
       }
       else
       {
-        if ( cl.hasOption( RANDOMIZEOPTION ) == false )
+        if ( cl.hasOption( RANDOMIZEOPTION ) == false && cl.hasOption( GENLAMBDARANGEOPTION ) == false )
           mDiary.warn( "Initial string will be all zeros! Use either -I or -R" );
       }
 
@@ -265,9 +265,10 @@ public class Cella extends Loggable
           mySharona.setRule( bStringRule  );
           mySharona.buildRulesMap();
 
-
-          int numRuns = 10;
-          int steps = 41;
+          System.out.println( " %   Rule:" + bStringRule );
+          System.out.println( " % Lambda:" + mySharona.getLambda() );
+          int numRuns = 1000;
+          int steps = 20;
           double inc = 1.0/(double)(steps-1);
           double target_rho = 0.0;
           for ( int j = 0; j < steps; j++ )
@@ -276,14 +277,15 @@ public class Cella extends Loggable
             for ( int k = 0; k < numRuns; k++ )
             {
               mySharona.setIC( CA.randomizedIC( sr, mySharona.getICWidth(), target_rho ) );
-              out.format( " rho: %1.3g ic: %s\n", target_rho, 
-                  CA.binaryBytesToString( mySharona.getIC() ) );
+              //out.format( " rho: %1.3g ic: %s\n", target_rho, 
+              //    CA.binaryBytesToString( mySharona.getIC() ) );
               mySharona.iterate();
               mySharona.getHistory().add_result( mySharona );
               fitness += mySharona.fitness();
               mySharona.resetFitness();
             }
 
+            out.format( "%3.2g ", target_rho);
             da.append(target_rho).append(" ").append((double)fitness/(double)numRuns).append("\n");
             bfw.write( da.toString() );
             bfw.flush();
@@ -297,6 +299,7 @@ public class Cella extends Loggable
           mDiary.error( ioe.getMessage() );
         }
 
+        out.format("\n");
         System.exit(0);
       }
 
