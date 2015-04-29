@@ -31,19 +31,13 @@ amount of information available to the rule was a benefit.
 \subsection{On mutational robustness}
 
 In section~\ref{sec:2_2} we explored the fitness landscape surrounding the best-performing $r = 3$ rule discovered by our GA in an attempt to 
-assess whether it permitted mutational robustness, i.e., genomic modification without an impact to fitness.
+assess whether the rule exhibited mutational robustness, i.e., genomic modification without an impact to fitness. The fact that average fitness 
+and its standard deviation decreases quickly (figure~\ref{fig:robustness}) shows that most mutations were deleterious to fitness. However, best-performing mutants actually did better for approximately a Hamming distance of 10 before starting to drop, and even then individuals occasionally performed 
+well relative to the performance of the source rule.
 
-Mutational robustness occurs when changes in the genotype are phenotypically neutral: The genomic modification results in no significant change 
-in the traits expressed, and hence no difference in fitness \cite{wagner_role_2012}. When a phenotype is robust in this way, it may be possible for the 
-genome to move to a very different region of search space by accruing changes over multiple generations, increasing the breadth of the search without 
-having to cross low-fitness boundaries.
-
-If our CAs are mutationally robust, then the nearby neighbors of elite rules should themselves perform well. To assess whether 
-this is the case, we tested the 500 elite $r = 3$ rules from generation 50 against 10k ICs, and selected the best performing rule. 
-We then generated 50 sets of 100 mutated rules each from this source rule, with the first set containing mutants with a Hamming distance from the 
-source of 1, the second a distance of 2, and so on. The fitness of each mutant was evaluated against 10k ICs; results are given in 
-figure~\ref{fig:robustness}.
-
+This suggests that the landscape around the rule is `rocky' in the sense that there are some paths that maintain (or even increase) a high 
+fitness, while most do not. But the rule is not `robustly robust` in the sense that any mutation is tolerated; there are some productive directions to go, but 
+not every direction is productive.
 
 \subsection{On the quest for a better solution}
 
