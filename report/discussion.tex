@@ -30,7 +30,20 @@ amount of information available to the rule was a benefit.
 
 \subsection{On mutational robustness}
 
-Here we discuss 2.2.
+In section~\ref{sec:2_2} we explored the fitness landscape surrounding the best-performing $r = 3$ rule discovered by our GA in an attempt to 
+assess whether it permitted mutational robustness, i.e., genomic modification without an impact to fitness.
+
+Mutational robustness occurs when changes in the genotype are phenotypically neutral: The genomic modification results in no significant change 
+in the traits expressed, and hence no difference in fitness \cite{wagner_role_2012}. When a phenotype is robust in this way, it may be possible for the 
+genome to move to a very different region of search space by accruing changes over multiple generations, increasing the breadth of the search without 
+having to cross low-fitness boundaries.
+
+If our CAs are mutationally robust, then the nearby neighbors of elite rules should themselves perform well. To assess whether 
+this is the case, we tested the 500 elite $r = 3$ rules from generation 50 against 10k ICs, and selected the best performing rule. 
+We then generated 50 sets of 100 mutated rules each from this source rule, with the first set containing mutants with a Hamming distance from the 
+source of 1, the second a distance of 2, and so on. The fitness of each mutant was evaluated against 10k ICs; results are given in 
+figure~\ref{fig:robustness}.
+
 
 \subsection{On the quest for a better solution}
 

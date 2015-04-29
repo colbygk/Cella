@@ -114,15 +114,18 @@ genome to move to a very different region of search space by accruing changes ov
 having to cross low-fitness boundaries.
 
 If our CAs are mutationally robust, then the nearby neighbors of elite rules should themselves perform well. To assess whether 
-this is the case, we selected XXXX elite rules from both the $r = 2$ and $r = 3$ runs, and randomly mutated each \textit{x} times, for $x = 1,2,3, ... 7$. 
-For each \textit{x}, we tested the resulting rules against a set of ICs and recorded the fitness. The results are given in figure~\ref{fig:robustness}.
+this is the case, we tested the 500 elite $r = 3$ rules from generation 50 against 10k ICs, and selected the best performing rule. 
+We then generated 50 sets of 100 mutated rules each from this source rule, with the first set containing mutants with a Hamming distance from the 
+source of 1, the second a distance of 2, and so on. The fitness of each mutant was evaluated against 10k ICs; results are given in 
+figure~\ref{fig:robustness}.
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=\linewidth]{foo.png}
-\caption{Testing for the mutational robustness of elite rules. XXXX elite rules from $r = 2$ and $r = 3$ GA runs were chosen and randomly mutated 1, 2, ... 7 
-times. After each mutation, the resulting rules were tested against the same set of ICs, and the fitness recorded. As can be seen in the figure, 
-rules are robust for approximately YYYY mutations, at which point fitness declines.}
+\includegraphics[width=\linewidth]{figures/mutational_robustness.eps}
+\caption{Mutational robustness of the best performing $r = 3$ rule for 0 to 50 mutations. 100 unique variations of the 
+original rule are generated with $m$ mutations, and each is evaluated over 10k randomly generated ICs. Mean fitness decreases 
+rapidly, but high fitness rules are still present, as indicated by the max fitness values. Within a Hamming distance of $\approx 10$, maximum performance 
+actually increases in comparison with the source rule. }
 \label{fig:robustness}
 \end{center}
 \end{figure}
