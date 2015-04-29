@@ -18,12 +18,12 @@ is a rule that successfully converges within 300 iterations.
 \begin{center}
 \includegraphics[width=0.8\linewidth]{figures/non_converging_radius2.png}
 \caption{Waterfall plot of a radius 2 rule that fails to converge within 300 iterations. The top row is the initial condition, and each successive row is the 
-result applying the rule to the row above it.}
+result of applying the rule to the row above it.}
 \label{fig:waterfall_1}
 \end{center}
 \end{figure}
 
-\begin{figure}
+\begin{figure} [H]
 \begin{center}
 \includegraphics[width=0.8\linewidth]{figures/converging_radius2.png}
 \caption{Waterfall plot of a radius 2 rule that successfully classifies an initial condition.}
@@ -48,7 +48,7 @@ It is also interesting to compare the performance of the most fit $r = 2$ and $r
 \ref{fig:r3_best_fit} show the best fitness for a sample run for the two neighborhoods as a function of generation. As can be seen in those figures, both trajectories exhibit `epochs' as described by Mitchell \cite{Mitchell:1994:ECA:186092.186116}: There is an initial plateau interrupted by a jagged rise in 
 best fitness, where these increases represent the discovery of new, dominant strategies.
 
-\begin{figure}
+\begin{figure} [H]
 \begin{center}
 \includegraphics[width=\linewidth]{figures/max_epoch_radius2.eps}
 \caption{Best fitness for an $r = 2$ run by generation. The maximum fitness trajectory exhibits epochs: the population rapidly leaves epoch 1, flattens out until about generation 30, and then climbs again to another plateau.}
@@ -67,6 +67,15 @@ Let $\lambda$ be the proportion of \texttt{1}s in the binary representation of a
 just described are equivalent to shifting from rules with $\lambda \approx 0$ or $\lambda \approx 1$ to rules with $\lambda \approx \frac{1}{2}$. 
 This transition is depicted in 
 figures~\ref{fig:histogram_r2} and~\ref{fig:histogram_r3}, for $r = 2$ and $r = 3$ runs, respectively.
+
+\begin{figure} [H]
+\begin{center}
+\includegraphics[width=\linewidth]{figures/entropy_fitness_plot.eps}
+\caption{Average Shannon entropy of transients for 500 elite rules from the 50th generation of the $r = 3$ GA runs, as evaluated over a test set of 
+10k ICs. Elite rules do not favor short transients. }
+\label{fig:transients}
+\end{center}
+\end{figure}
 
 \afterpage{%
 \begin{figure*}
@@ -95,16 +104,8 @@ successful rules are starting to cluster near $\lambda = 0.5$, a trend that cont
 
 Finally, note that each location in the lattice has a transient period in which its state may continue to flip before finally stabilizing (if at all; see figures~\ref{fig:waterfall_1} and \ref{fig:waterfall_2}). One way to quantify this period is to count the number of times a given location changes state 
 over the 300 iterations of a rule, given an initial condition. In order to visualize the relation between the length of a transient period and the fitness of a rule, 
-we recorded the average length of the transients for each rule on each IC in the test set after each generation, and plotted this value against the fitness 
+we recorded the average Shannon entropy of the transients for each elite rule on a set of 10k test ICs, and plotted this value against the fitness 
 for that rule (figure~\ref{fig:transients}).
-
-\begin{figure}
-\begin{center}
-\includegraphics[width=\linewidth]{foo.png}
-\caption{Average length of transients for each rule plotted against the fitness of that rule.}
-\label{fig:transients}
-\end{center}
-\end{figure}
 
 \subsection{Mutational robustness} \label{sec:2_2}
 
