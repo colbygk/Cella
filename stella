@@ -39,12 +39,12 @@ begin
 
   radius = ( elites.first.length == 32 ? 2 : 3 ); # Make assumption
 
-  ICs = []
+  ics = []
   results = []
 
   ranCa = CA.new 121, radius
   10000.times do
-    ICs << CA.randomizedIC( 121.to_java(:int) )
+    ics << CA.randomizedIC( 121.to_java(:int) )
   end
 
   es = Executors.newFixedThreadPool 4
@@ -59,7 +59,7 @@ begin
     ca.setBias false
     ca.buildRulesMap
 
-    fitness = ca.iterateBackground ICs, es
+    fitness = ca.iterateBackground ics, es
 
     print " #{fitness}\n"
     results << [r, fitness]

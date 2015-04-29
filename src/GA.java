@@ -396,7 +396,7 @@ public class GA extends Loggable
 
       // Algorithm can be slow, because it is not keeping track of a list
       // of open mutations and then selecting a random number based on that
-      while ( k < n-1 )
+      while ( k < n )
       {
         b = r.nextInt( rw );
         Integer i = Integer.valueOf( b );

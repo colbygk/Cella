@@ -322,6 +322,11 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
     return new String( mIC, StandardCharsets.US_ASCII );
   }
 
+  public static String initialConditionToString ( byte [] ic )
+  {
+    return new String( ic, StandardCharsets.US_ASCII );
+  }
+
   public void step ()
   {
     mChangedLastStep = false;
@@ -521,6 +526,14 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
     }
 
     return mCAHistory.fitness;
+  }
+
+  public int hammingDistance ( CA a )
+  {
+    BitSet b = (BitSet)mRule.clone();
+    b.xor( a.getRule() );
+
+    return b.cardinality();
   }
 
   public Set sortedEntrySet ()
