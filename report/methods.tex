@@ -62,11 +62,11 @@ above.
 
 \subsection{Implementation and Optimization}
 
-The GA was implemented in Java with various optimizations. 
+The GA was implemented in Java and JRuby with various optimizations. The individual computations of the CAs were identified as the dominant calculation performed by the simulation code. Optimizations were focused on those areas and in particular the following strategies were followed. Use of HashMaps for constant time lookups of rule behaviors to outcomes for the following bit string, use of just two byte arrays to represent the the previous state and the current state. A special java class was created to represent the the underlying rules behaviors so that HashMap usage would be an optimal match between reading sections of the current state of the CA and mapping to their outcome behavior in constant time.
 
-All experiments were run on ??????????????
+All experiments were run on a late 2014 iMac, 4GHz, 4 core, Intel Core i7 with 32GB of RAM. The optimizations used have been benchmarked at a little over 350,000 CA iterations per second. This was combined with the Java Executor threading model, allowing an arbitrary number of threads to be launched and increasing the overall through-put on multicore systems. With this implementation we regularly achieved an actual rate of CA iterations of over 1,000,000 per second. A final optimization that greatly increased the effective rate of CAs per second was to stop processing a CA once it had arrived at a static state. This lead to effective processing rates of several million CA iterations per second and allowed for our code to be distributed across several individual computers to run multiple rounds of our GA code base (see nutella) if needed. However, the code ran quickly enough that a single 4 core system sufficed.
 
 \subsection{Data analysis methods}
 
-I'm not sure what's supposed to go here.
+We made use of Matlab to analyze the data products of our code.  
 
