@@ -24,15 +24,15 @@ ylabel('Fraction of correct classifications','Interpreter','Latex',...
     'FontSize',fnl );
 title('Correctness of Elite Rules','Interpreter','Latex',...
     'FontSize',fnt);
-set(gca,'FontSize',fnx);
 
 hold on;
 
 x=load('data/rho0_correctness_r3.dat');
 plot(x(:,1),x(:,2),'-.');
 
-legend( 'r=2, \lambda = 0.0525', 'r=3, \lambda \approx 0.546875',...
+legend( 'r=2, \lambda = 0.5625', 'r=3, \lambda \approx 0.546875',...
     'Location','Southeast');
+set(gca,'FontSize',fnx);
 
 % Figure saving on OSX seems to be broken in recent versions.
 % this fills a landscape eps.
@@ -40,3 +40,31 @@ f1.PaperOrientation = 'landscape';
 f1.PaperUnits = 'centimeters';
 f1.PaperPosition = [-1.25 1 30 20];
 saveas(f1,'lambda_correctness_plot.eps','psc2');
+
+x=load('data/rho0_biased_correctness_r2.dat');
+
+f2=figure(2);
+plot(x(:,1),x(:,2));
+xlim([0.0 1.0]);
+ylim([0.0 1.0]);
+xlabel('$\rho_0$','Interpreter','Latex','FontSize',fnl);
+ylabel('Fraction of correct classifications','Interpreter','Latex',...
+    'FontSize',fnl );
+title('Correctness of biased Elite Rules','Interpreter','Latex',...
+    'FontSize',fnt);
+
+hold on;
+
+x=load('data/rho0_biased_correctness_r3.dat');
+plot(x(:,1),x(:,2),'-.');
+
+legend( 'r=2, \lambda = 0.5625', 'r=3, \lambda \approx 0.546875',...
+    'Location','Southeast');
+set(gca,'FontSize',fnx);
+
+% Figure saving on OSX seems to be broken in recent versions.
+% this fills a landscape eps.
+f2.PaperOrientation = 'landscape';
+f2.PaperUnits = 'centimeters';
+f2.PaperPosition = [-1.25 1 30 20];
+saveas(f2,'lambda_biased_correctness_plot.eps','psc2');
