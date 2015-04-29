@@ -1,0 +1,82 @@
+#!/usr/bin/env jruby
+
+#
+# CS523 Project 2 - Sprint 2015
+#
+# Colby & Whit
+# 
+# This jruby script is used to search through the fittest
+# rules as determined by running 50 rounds of 50 generations
+#
+# This script takes the results of those elite rules found via
+# nutella.
+#
+# Then runs them each through 10000 randomly generated initial
+# conditions (rho_0 \in [0.0 1.0]) and then picks the top rule
+# from that run and generates the data required to plot
+# a "correctness" plot
+#
+
+$CLASSPATH << "lib/cs523-project2-cella.jar"
+
+include Java
+
+import 'cs523.project2.CA'
+import 'cs523.project2.Cella'
+import 'java.util.concurrent.ExecutorService'
+import 'java.util.concurrent.Executors'
+
+
+
+begin
+  abort "Usage: stella <list of files with elite rules lists>" unless ARGV.length != 0
+
+  elites = []
+
+  ARGV.each do |e|
+    elites << File.open(e).to_a.last.split(' ').first
+  end
+
+  radius = ( elites.first.length == 32 ? 2 : 3 ); # Make assumption
+
+  ICs = []
+  results = []
+
+  ranCa = CA.new 121, radius
+  10000.times do
+    ICs << CA.randomizedIC( 121.to_java(:int) )
+  end
+
+  es = Executors.newFixedThreadPool 4
+
+  print "% Searching for fittest of the fit\n"
+  elites.each do |r|
+    print "% Rule: #{r}:"
+    ca = CA.new 121, radius
+    ca.setRule( r.to_java )
+    ca.setIterations 300
+    ca.setStopIfStatic true
+    ca.setBias false
+    ca.buildRulesMap
+
+    fitness = ca.iterateBackground ICs, es
+
+    print " #{fitness}\n"
+    results << [r, fitness]
+  end
+
+  es.shutdown
+
+  winner = results.sort_by { |e| e[1] }.last
+
+  print "\n Winner: #{winner[0]} with fitness #{winner[1]}\n"
+  print " Generating correctness data in rho0_correctness_r#{radius}.dat\n"
+
+  args = ["-l","rho0_correctness_r#{radius}.dat","-r","#{radius}","-b","#{winner[0]}"]
+
+  Cella.main( args.to_java :String )
+
+rescue Exception => ex
+  puts ex.message
+  puts ex.backtrace
+end
