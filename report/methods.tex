@@ -9,11 +9,11 @@ All runs of the GA used a population of 50 CAs, and the population is evolved fo
 Initial rules were chosen from a uniform distribution of $\lambda \in \lbrack0.0, 1.0\rbrack$.
 
 All CAs begin with an initial fitness of 0.0. At each generation, each CA was tested against a set of 100 ICs by 
-running the CA on each IC for 200 iterations or until there was no change in the bit string over two iterations (indicating that 
+running the CA on each IC for 300 iterations or until there was no change in the bit string over two iterations (indicating that 
 the CA had settled into a steady state for that IC). 
 
 For the results reported in section~\ref{sec:2_1}, we used the fitness function given in equation~\ref{eq:fitness_1}, where 
-$\Delta_{fitness}$ is the change in fitness for a CA, and $\rho_n$ is the iteration at which the CA stopped ($n \leq 200$). This fitness 
+$\Delta_{fitness}$ is the change in fitness for a CA, and $\rho_n$ is the iteration at which the CA stopped ($n \leq 300$). This fitness 
 function is very simple: Given an IC, the fitness for a CA is increased by 1.0 if and only if it settles to all \texttt{1}s when $\rho_0 > 0.5$ or 
 settles to all \texttt{0}s when $\rho_0 < 0.5$.
 \begin{equation} \label{eq:fitness_1}
