@@ -1,0 +1,67 @@
+#!/usr/bin/env jruby
+
+#
+# CS523 Project 2 - Sprint 2015
+#
+# Colby & Whit
+# 
+# This jruby script generates the transient length
+# data
+#
+
+$CLASSPATH << "lib/cs523-project2-cella.jar"
+
+include Java
+
+import 'cs523.project2.CA'
+import 'java.util.concurrent.ExecutorService'
+import 'java.util.concurrent.Executors'
+
+
+# Derived from http://rosettacode.org/wiki/Entropy#Ruby
+def entropy ( ia )
+  ia.each.group_by(&:to_i).values.map {|x| x.length/ia.length.to_f}.reduce(0) {|e,x| e-x*Math.log2(x)}
+end
+
+begin
+  abort "Usage: umbrella <list of files to read elite rules from>" unless ARGV.length != 0
+
+  elites = []
+
+  ARGV.each do |e|
+    elites.concat File.open(e).to_a.last.split(' ')
+  end
+
+  radius = ( elites.first.length == 32 ? 2 : 3 ); # Make assumption
+
+  ics = []
+  ent = []
+  fit = []
+  1000.times do
+    ics << CA.randomizedIC( 121.to_java(:int) )
+  end
+
+  es = Executors.newFixedThreadPool 4
+  ca = CA.new 121, radius
+  ca.setIterations 300
+  ca.setStopIfStatic true
+  ca.setBias false
+
+  elites.each do |r|
+    ca.setRule( r.to_java )
+    ca.buildRulesMap
+    ca.resetFitness
+    ca.resetTransients
+
+    fitness = ca.iterateBackground ics, es
+    t = ca.getHistory.getTransientCounts.to_a
+
+    print "#{entropy( t )} #{fitness}\n"
+  end
+
+  es.shutdown
+
+rescue Exception => ex
+  puts ex.message
+  puts ex.backtrace
+end

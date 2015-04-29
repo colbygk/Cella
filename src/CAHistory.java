@@ -3,6 +3,7 @@ package cs523.project2;
 import java.util.BitSet;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Arrays;
 
 class CAHistory extends Loggable
 {
@@ -15,6 +16,7 @@ class CAHistory extends Loggable
   public float mLowerBound = 0.0f;
   public float mUpperBound = 1.0f;
   public int totalIterations = 0;
+  public int[] mTransients = null;
 
   private boolean mUseBias = false;
   public boolean useBias() { return mUseBias; }
@@ -59,7 +61,17 @@ class CAHistory extends Loggable
     mRho.put( ic, rhos );
   }
 
+  public int[] getTransientCounts ()
+  {
+    return mTransients;
+  }
 
+  public void resetTransients ()
+  {
+    if ( mTransients != null )
+      for ( int k = 0; k < mTransients.length; k++ )
+        mTransients[k] = 0;
+  }
 
   public synchronized void add_result ( CA ca )
   {
@@ -85,6 +97,13 @@ class CAHistory extends Loggable
     }
 
     totalIterations += ca.numActualIterations();
+
+    int[] mt = ca.getTransientCounts();
+    if ( mTransients == null )
+      mTransients = Arrays.copyOf( mt, mt.length );
+    else
+      for ( int k = 0; k < mt.length; k++ )
+        mTransients[k] += mt[k];
 
     // mDiary.info( " r0: " + rhos[0] + " r: " + rhos[1] + " f: " + fitness +
       //   " l: " + mLowerBound + " u: " + mUpperBound);
