@@ -32,23 +32,16 @@ result applying the rule to the row above it.}
 \end{center}
 \end{figure}
 
-Figures~\ref{fig:r2_rho} and \ref{fig:r3_rho} plot the performance of an elite $r = 2$ and an elite $r = 3$ rule, respectively, as evolved after 50 generations. As can be seen, performance did not differ significantly; or maybe it did. We'll find out, and put a summary regarding which rule performs better here.
+After running the GA for 50 runs, for both $r = 2$ and $r = 3$, we evaluated the elite rules from the final generation of each case against a test set of 10k ICs, and ranked them by their fitness score. Figure~\ref{fig:r2_r3_rho} plots the performance of the best performing $r = 2$ and $r = 3$ rule. As the figure shows, 
+the best $r = 3$ outperforms the best $r = 2$ rule.
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=\linewidth]{figures/lambda_correctness_1_r2.eps}
-\caption{Performance of two elite, $r = 2$ rules as a function of $\rho$. Each rules' performance was recorded for 1000 ICs with $\rho$ 
-varying in intervals of 0.025, and precent correct is plotted. As expected, both rules perform well for extreme values of $\rho$, but 
-performance drops as $\rho$ approaches the difficult cases around $\frac{1}{2}$.}
-\label{fig:r2_rho}
-\end{center}
-\end{figure}
-\begin{figure} [ht]
-\begin{center}
-\includegraphics[width=\linewidth]{foo.png}
-\caption{Performance of an elite, $r = 3$ rule as a function of $\rho$. As in the case of an elite $r = 2$ rule (fig.~\ref{fig:r2_rho}), the rule performs well when the proportion of \texttt{1}s is 
-low or high, but performance drops as $\rho$ approaches the difficult cases around $\frac{1}{2}$.}
-\label{fig:r3_rho}
+\includegraphics[width=\linewidth]{figures/lambda_correctness_plot.eps}
+\caption{The best performing elite rules from 50 GA runs each for $r = 2$ and $r = 3$. As expected, both rules perform well for extreme values 
+of $\rho$, but performance drops as $\rho$ approaches the difficult cases around $\frac{1}{2}$. Furthermore, the $r = 3$ rule performed better than 
+its $r = 2$ counterpart.}
+\label{fig:r2_r3_rho}
 \end{center}
 \end{figure}
 
@@ -152,8 +145,13 @@ closer to 0.5, the more a correct classification is worth. Furthermore, this fun
 all ICs are worth the same amount of fitness regardless of their distance from $\rho = 0.5$, and the distance becomes increasingly more important as 
 the generations progress.
 
-To address this issue, we modified the GA so that IC sets are initially randomly constructed using a uniform distribution, but 
-the distribution becomes increasingly normal, with mean of $\rho = 0.5$. This means that as the GA progresses, it becomes less likely that a 
-set of ICs will include the easier cases, and more likely that harder cases will be included. 
+\begin{figure}
+\begin{center}
+\includegraphics[width=\linewidth]{figures/lambda_biased_correctness_plot.eps}
+\caption{The best performing elite rule from 50 runs of our `biased-fitness' GA, plotted against the same $r = 2$ and $r = 3$ rules from 
+figure~\ref{fig:r2_r3_rho}.}
+\label{fig:r2_r3_rho}
+\end{center}
+\end{figure}
 
 
