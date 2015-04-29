@@ -1,8 +1,15 @@
 package cs523.project2;
 
-
 /*
+ * CS 523 - Spring 2015
+ *  Colby & Whit
+ *  Project 2
+ *
  * Loggable.java
+ *
+ * A class used to allow Diary functions
+ * to appear within other classes in this project
+ *
  */
 
 

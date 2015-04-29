@@ -1,5 +1,17 @@
 package cs523.project2;
 
+/*
+ * CS 523 - Spring 2015
+ *  Colby & Whit
+ *  Project 2
+ *
+ * CAHistory.java
+ *
+ * Utility class used by cs523.project2.CA to keep
+ * statistics of an individual CA
+ *
+ */
+
 import java.util.BitSet;
 import java.util.Map;
 import java.util.HashMap;

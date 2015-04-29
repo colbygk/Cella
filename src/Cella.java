@@ -1,7 +1,15 @@
 package cs523.project2;
 
 /*
+ * CS 523 - Spring 2015
+ *  Colby & Whit
+ *  Project 2
+ *
  * Cella.java
+ *
+ * Program that encapsulates working with
+ * cs523.project2.CA
+ *
  */
 
 import java.io.PrintStream;
@@ -102,13 +110,13 @@ public class Cella extends Loggable
     o.addOption( GENLAMBDARANGEOPTION, true, "Generation data for range of lambdas across rho's" );
     o.addOption( RANDOMIZEOPTION, false, "Randomize Initial String" );
     o.addOption( PRINTITEROPTION, false, "Print iterations" );
-    o.addOption( ITERATIONSOPTION, true, "Number of iterations [200]" );
+    o.addOption( ITERATIONSOPTION, true, "Number of iterations [300]" );
     o.addOption( INITIALOPTION, true, "Initial string" );
     o.addOption( STATICSTOPSOPTION, false, "Stop if CA is static" );
     o.addOption( HELPOPTION, false, "Help info" );
     o.addOption( BENCHOPTION, false, "benchmark" );
     o.addOption( PRINTRULESMAPOPTION, false, "Print out rules map" );
-    o.addOption( WIDTHOPTION, true, "Set width of CA" );
+    o.addOption( WIDTHOPTION, true, "Set width of initial condition/CA" );
 
     return o;
   }

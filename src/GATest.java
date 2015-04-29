@@ -1,6 +1,17 @@
 
 package cs523.project2;
 
+/*
+ * CS 523 - Spring 2015
+ *  Colby & Whit
+ *  Project 2
+ *
+ * GATest.java
+ *
+ * Testing routines for the GA aspects of this Project
+ *
+ */
+
 import org.junit.*;
 import static org.junit.Assert.*;
 

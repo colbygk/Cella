@@ -1,6 +1,18 @@
 
 package cs523.project2;
 
+/*
+ * CS 523 - Spring 2015
+ *  Colby & Whit
+ *  Project 2
+ *
+ * NeighborhoodTest.java
+ *
+ * Provides tests for ensuring
+ * Neighborhood operates as specified
+ *
+ */
+
 import org.junit.*;
 import static org.junit.Assert.*;
 

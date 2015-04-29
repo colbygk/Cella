@@ -1,5 +1,24 @@
 package cs523.project2;
 
+/*
+ * CS 523 - Spring 2015
+ *  Colby & Whit
+ *  Project 2
+ *
+ * Neighborhood.java
+ *
+ * A utility class used to help optimize
+ * the handling of sub-sections of CA rules.
+ * This class provides comparable and methods
+ * to support hashing of instantiations of this
+ * class.
+ *
+ * Using this class, allows for constant time lookups
+ * of individual portions of a CA bit string, making
+ * the application of the rules efficent
+ *
+ */
+
 import java.util.Arrays;
 import java.nio.charset.StandardCharsets;
 

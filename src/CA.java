@@ -1,9 +1,14 @@
 package cs523.project2;
 
 /*
+ * CS 523 - Spring 2015
+ *  Colby & Whit
+ *  Project 2
+ *
  * CA.java
  *
  * Cellular Automaton Class
+ *
  */
 
 import java.util.Map;
@@ -288,6 +293,15 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
     return sb.toString();
   }
 
+  /*
+   * This key method call creates the HashMap information necessary
+   * to allow for constant time lookups of subsections of a CA to
+   * rule behaviors.
+   *
+   * It must be called after setRule(...) or GA.mutuate 
+   * and before iterateBackground(...) or iterate(...) or step()
+   *
+   */
   public void buildRulesMap ()
   { 
     int j = (1 << mDiameter);
@@ -330,6 +344,11 @@ public class CA extends Loggable implements Comparable<CA>, Callable<CA>
     return new String( ic, StandardCharsets.US_ASCII );
   }
 
+  /*
+   * The primary method of who rules are applied on a CA.
+   * a call to step() runs the full rules application to
+   * the current copy of the bit string.
+   */
   public void step ()
   {
     mChangedLastStep = false;

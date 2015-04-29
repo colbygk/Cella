@@ -1,9 +1,16 @@
 package cs523.project2;
 
 /*
+ * CS 523 - Spring 2015
+ *  Colby & Whit
+ *  Project 2
+ *
  * GA.java
  *
  * Genetic Algorithm Class for our Cellular Automata
+ * Primarily, this program is used to wrap GA
+ * functions around cs523.program.CA
+ *
  */
 
 import java.util.Collections;

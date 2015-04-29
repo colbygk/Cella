@@ -1,7 +1,15 @@
 package cs523.project2;
 
 /*
+ * CS 523 - Spring 2015
+ *  Colby & Whit
+ *  Project 2
+ *
  * Gella.java
+ *
+ * This program encapsulates the handling of
+ * cs523.project2.GA
+ *
  */
 
 import java.io.PrintStream;
@@ -110,7 +118,7 @@ public class Gella extends Loggable
     Options o = new Options();
 
     o.addOption( RADIUSOPTION, true, "Specify radius" );
-    o.addOption( ITERATIONSOPTION, true, "Number of iterations [200]" );
+    o.addOption( ITERATIONSOPTION, true, "Number of iterations [300]" );
     o.addOption( HELPOPTION, false, "Help info" );
     o.addOption( BENCHOPTION, false, "benchmark" );
     o.addOption( WIDTHOPTION, true, "Set width of CA's" );

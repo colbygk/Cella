@@ -1,6 +1,17 @@
 
 package cs523.project2;
 
+/*
+ * CS 523 - Spring 2015
+ *  Colby & Whit
+ *  Project 2
+ *
+ * CATest.java
+ *
+ * Testing routines for cs523.project2.CA
+ *
+ */
+
 import org.junit.*;
 import static org.junit.Assert.*;
 
