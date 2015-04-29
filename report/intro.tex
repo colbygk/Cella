@@ -7,7 +7,7 @@ $\rightarrow$ \texttt{1}, which says that a location in state \texttt{0} surroun
 `Running' a CA involves taking an initial lattice and iterating for some number of time steps; the `output' of the CA is the global state of the 
 lattice when the system halts.
 
-Despite their simplicity, CAs are remarkably interesting. For example, CAs can be Turing-equivalent, as in the case of the Game of Life 
+Despite their simplicity, CAs are remarkably interesting. For example, CAs can be Turing-equivalent \cite{cook_concrete_2009}, 
 \cite{berlekamp_winning_1982}, \cite{adamatzky_turing_2001}. Furthermore, CAs are good examples of complex systems, in the sense that 
 they are composed of simple homogenous components (lattice locations) interacting locally (as determined by the extent of the rule neighborhood) to affect  distributed information processing at the level of the entire system \cite{mitchell_complexity:_2009}. Consequently, studying the characteristics and 
 behavior of CAs may provide insights into the nature of complex systems in general. 
@@ -28,18 +28,23 @@ IC as having either more \texttt{1}s than \texttt{0}s or vice versa. In the form
   \end{cases}
 \end{equation}
 The ``$\rho = \frac{1}{2}$'' problem is interesting precisely because a global feature of the IC - i.e., $\rho$ - must be correctly categorized through only 
-local information processing. Furthermore, the space of possible solutions is not small: For \textit{k} states and a neighborhood of radius \textit{r} there are $k^{k^{2r+1}}$ possible rules. So, for the parameters we consider in this paper (\textit{k} = 2 and \textit{r} = \{2, 3\}), we are faced with the task of searching large sets of possible rules. 
+local information processing. Furthermore, the space of possible solutions is not small: For \textit{k} states and a neighborhood of radius \textit{r} there are $k^{k^{2r+1}}$ possible rules. So, for the parameters we consider in this paper ($k = 2$ and $r \in \lbrace2, 3\rbrace$), we are faced with the task of searching large sets of possible rules. 
 
 To cope with the size of the search space, we utilize a genetic algorithm (GA). In a GA, a relatively small number of possible solutions is randomly chosen from 
 the set of all rules, and their performance is assessed against a random set of ICs. A new set of rules is generated using mutation (i.e., rules are randomly modified) and crossover (i.e., parts from two rules are combined to form a new rule), where those rules that performed better on the ICs are more likely to be parents of the new rules. In this way, the GA randomly samples the space of possible solutions, and over multiple generations refines the search to look more closely at those regions that contain potential solutions.
 
 In this paper we consider the capacity of a GA to locate solutions to the ``$\rho = \frac{1}{2}$'' problem, and also how successful those solutions are. In particular, we do the following: 
 \begin{enumerate}
-	\item Following \cite{Mitchell:1994:ECA:186092.186116}, in section \ref{sec:2_1} we compare the results of a GA search for rules with $r = 2$ and $r = 3$ on binary ($k = 2$) 
-	ICs of length 121. We describe how the set of most fit rules changes across generations, as well as assess differences between radii.
+	\item Following \cite{Mitchell:1994:ECA:186092.186116}, in section \ref{sec:2_1} we compare the results of a GA search for rules 
+	with $r = 2$ and $r = 3$ on binary ($k = 2$) 
+	ICs of length 121. We characterize how the strategies of the best-performing rules change over the course of a GA run, 
+	and show that the $r = 3$ case outperforms the $r = 2$ case.
 	\item \textit{Mutational robustness} occurs when phenotypic traits are invariant with respect to changes in the underlying genome \cite{wagner_role_2012}.  
 	In \ref{sec:2_2} we investigate whether successful rules exhibit mutational robustness by sampling additional rules in the neighborhood of successful rules. If robustness is present, then we should find that nearby rules remain successful.
-	\item Finally, in \ref{sec:2_3} we attempt to improve on the results reported in \ref{sec:2_1} by changing the distribution of ICs as a function of generation. We predict that this modification will at least lead to a faster convergence on equally successful rules.
+	\item Finally, in \ref{sec:2_3} we attempt to improve on the results reported in \ref{sec:2_1} by dynamically adjusting the fitness function as a GA  
+	is executed so that it is gradually encouraged to search for solutions to harder ICs and discouraged from relying on previously found 
+	solutions to easier ICs. We show that this `biased fitness' 
+	modification leads to better-preforming solutions, especially in the $r = 2$ case. 
 \end{enumerate}
 
 

@@ -18,11 +18,15 @@ is one way or the other. Interestingly, we also found rules that gambled in a di
 that, after 300 iterations, the final global state will be correct. Gambling is better than doing nothing, regardless of how you do it, and the GA 
 was good at discovering this.
 
-In both $r = 2$ and $r = 3$, $\lambda$ gradually moves towards 0.5: Rules retain the initial strategy of always converging one way or the other, but begin to include `extreme' values of $\rho_0$ at the other end of the spectrum. In this case we see a slight difference in the histograms for $r = 2$ and 
-$r = 3$. In the former, we see the characteristic `dual peak` around $\lambda = 0.5$; this results from the fact that rules converge from both directions, 
-i.e., from $\lambda \approx 0.0$ and $\lambda \approx 1.0$, but in the $r = 3$ case, we do not see this pattern; instead, we find a peak around 0.5 
-with troughs on either side. We are not certain what is responsible for this distribution, but it could be an artifact of the bin size for the histograms.
+In both $r = 2$ and $r = 3$, $\lambda$ gradually moves towards 0.5: Rules retain the initial strategy of always converging one way or the other, but begin to include `extreme' values of $\rho_0$ at the other end of the spectrum. However, we also see a slight difference in the histograms for $r = 2$ and 
+$r = 3$. In the former, there is the characteristic `dual peak' around $\lambda = 0.5$; this feature results from the fact that rules converge from both directions, 
+i.e., from $\lambda \approx 0.0$ and $\lambda \approx 1.0$. But in the $r = 3$ case, we do not see this pattern; instead, we find a peak around 0.5 
+with troughs on either side. We are not certain what is responsible for this distribution, but the absence of dual peaks could be an artifact of the 
+bin size for the histograms.
 
+Finally, to address the issue posed at the beginning of this section, figure~\ref{fig:r2_r3_rho} shows that the best of the $r = 3$ rules performs better than 
+its $r = 2$ counterpart. It thus appears that the larger search space of the former was not an impediment to finding a fit solution, and the greater 
+amount of information available to the rule was a benefit.
 
 \subsection{On mutational robustness}
 
@@ -30,6 +34,14 @@ Here we discuss 2.2.
 
 \subsection{On the quest for a better solution}
 
-Here we discuss 2.3.
+ICs with extreme values of $\rho$ are easier to classify but interfere with the GA's ability to cope with harder cases at later generations. To address this, 
+we implemented a `biased fitness' version of the GA that (i) makes the fitness benefit of correctly classifying an IC a function of its distance from 
+$\rho = 0.5$ (the further the distance, the less the fitness benefit), and (ii) has this bias increase as the generation increases 
+(see section~\ref{sec:methods}). In this way, the fitness function encourages the exploration of solutions to harder ICs as the GA proceeds.
+
+Figure~\ref{fig:r2_r3_rho_biased} shows that the performance of the best biased $r = 2$ rule outperforms its unbiased counterpart, suggesting that 
+the dynamic fitness function succeeded in focusing the search on solutions to harder cases. The figure also shows that the best biased $r = 3$ rule 
+appears to do about as well as its unbiased counterpart; however, these rules were selected using 10k random ICs, and the biased $r = 3$ rule 
+outperformed the unbiased version on that test set.
 
 
